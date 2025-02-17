@@ -29,7 +29,6 @@
         "qs": "^6.13.0",
         "simple-icons": "^13.10.0",
         "sm-crypto-v2": "^1.9.2",
-        "sqlite3": "^5.1.7",
         "vue": "^3.5.0",
         "vue-router": "^4.3.0",
         "vue-tippy": "^6.4.4"
