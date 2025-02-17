@@ -3,7 +3,7 @@
 import { defineStore } from 'pinia'
 import { get, post } from '@/api/api'
 
-import { getUserProgress, setUserProgress, checkQuestionExists, getProgressCount } from '@/idb/user_progress.db'
+import { getUserProgress, setUserProgress, checkQuestionExists, getProgressCount, isProgressEmpty } from '@/idb/user_progress.db'
 import { setStarProgress, checkStarExists, addItemToFolder, removeItemFromFolder, getFolderContent } from '@/idb/star_questions.db'
 
 import { useAuthStore } from './auth'
@@ -113,13 +113,13 @@ export const useUserStore = defineStore('user', {
 
                 if (response.data.code === 200) {
                     const data = response.data.data
-                    let currentData: ProgressData[] = [];
+                    let currentData: ProgressData[] = []
 
                     if (userStore.setting.auto_sync_data) {
                         currentData = await this.getAllProgress()
-                        
+
                         if (!currentData) {
-                            currentData = [];
+                            currentData = []
                         }
 
                         if (currentData.length > data.length) {
@@ -164,6 +164,15 @@ export const useUserStore = defineStore('user', {
         async getAllProgress() {
             try {
                 const data = await getUserProgress()
+                return data
+            } catch (err) {
+                console.error('Catch error in UserStore - getAllProgress(). Details: ', err)
+                return []
+            }
+        },
+        async isProgressEmpty() {
+            try {
+                const data = await isProgressEmpty()
                 return data
             } catch (err) {
                 console.error('Catch error in UserStore - getAllProgress(). Details: ', err)

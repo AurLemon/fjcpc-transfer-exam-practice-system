@@ -47,3 +47,9 @@ export async function getProgressCount(): Promise<number> {
     const progressData = (await db.get('user_progress', 'progress')) || []
     return Array.isArray(progressData) ? progressData.length : 0
 }
+
+export async function isProgressEmpty(): Promise<boolean> {
+    const db = await dbPromise
+    const progressData = await db.get('user_progress', 'progress')
+    return Boolean(!progressData)
+}

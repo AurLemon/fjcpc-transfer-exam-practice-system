@@ -47,30 +47,32 @@ export default defineComponent({
             <div class="page-about-footer__contact">
                 <div class="page-about-footer__title">项目开发者</div>
                 <div class="page-about-footer__wrapper">
-                    <div class="page-about-footer__user">
-                        <div class="page-about-footer__avatar">
-                            <img src="../assets/images/logo/AurLemon_logo.jpg" />
+                    <a href="https://aurlemon.top" target="_blank">
+                        <div class="page-about-footer__user">
+                            <div class="page-about-footer__avatar">
+                                <img src="../assets/images/logo/AurLemon_logo.jpg" />
+                            </div>
+                            <div class="page-about-footer__name" v-tippy="{ content: '别信，船政好不到哪去' }">柠檬</div>
+                            <div class="page-about-footer__id" v-tippy="{ content: 'MC 的 ID 也是这个' }">Aurora_Lemon</div>
                         </div>
-                        <div class="page-about-footer__name" v-tippy="{ content: '别信，船政好不到哪去' }">柠檬</div>
-                        <div class="page-about-footer__id" v-tippy="{ content: 'MC 的 ID 也是这个' }">Aurora_Lemon</div>
-                    </div>
-                    <div class="page-about-footer__whereru">
-                        <div class="page-about-footer__iamhere">
-                            <a href="https://space.bilibili.com/204271518" target="_blank" v-tippy="{ content: 'B 站' }">
-                                <img src="../assets/images/logo/bilibili_logo.svg" />
-                            </a>
+                        <div class="page-about-footer__whereru">
+                            <div class="page-about-footer__iamhere">
+                                <a href="https://space.bilibili.com/204271518" target="_blank" v-tippy="{ content: 'B 站' }">
+                                    <img src="../assets/images/logo/bilibili_logo.svg" />
+                                </a>
+                            </div>
+                            <div class="page-about-footer__iamhere">
+                                <a href="https://github.com/AurLemon" target="_blank" v-tippy="{ content: 'GitHub' }">
+                                    <img src="../assets/images/logo/GitHub_logo.svg" />
+                                </a>
+                            </div>
+                            <div class="page-about-footer__iamhere">
+                                <a href="https://cnblogs.com/AurLemon" target="_blank" v-tippy="{ content: '博客园' }">
+                                    <img src="../assets/images/logo/cnblogs_logo.svg" />
+                                </a>
+                            </div>
                         </div>
-                        <div class="page-about-footer__iamhere">
-                            <a href="https://github.com/AurLemon" target="_blank" v-tippy="{ content: 'GitHub' }">
-                                <img src="../assets/images/logo/GitHub_logo.svg" />
-                            </a>
-                        </div>
-                        <div class="page-about-footer__iamhere">
-                            <a href="https://cnblogs.com/AurLemon" target="_blank" v-tippy="{ content: '博客园' }">
-                                <img src="../assets/images/logo/cnblogs_logo.svg" />
-                            </a>
-                        </div>
-                    </div>
+                    </a>
                 </div>
             </div>
             <div class="page-about-footer__techstacks">
@@ -245,65 +247,69 @@ export default defineComponent({
             gap: 0.5rem;
 
             .page-about-footer__wrapper {
-                display: flex;
-                justify-content: space-between;
-                gap: 1rem;
-                color: var(--color-base--subtle);
-                font-size: 14px;
                 min-width: 280px;
-                padding: 5px 10px;
-                border-radius: 6px;
-                background: var(--color-surface-2);
 
-                .page-about-footer__user {
+                a {
                     display: flex;
-                    align-items: center;
-                    gap: 0.25rem;
+                    justify-content: space-between;
+                    gap: 1rem;
+                    color: var(--color-base--subtle);
+                    font-size: 14px;
+                    padding: 5px 10px;
+                    border-radius: 6px;
+                    background: var(--color-surface-2);
+                    text-decoration: none;
 
-                    .page-about-footer__avatar {
-                        $img-value-length: 20px;
-
-                        img {
-                            display: block;
-                            width: $img-value-length;
-                            height: $img-value-length;
-                            border-radius: 50%;
-                            user-select: none;
-                        }
-                    }
-
-                    .page-about-footer__name {
-                        font-weight: 600;
-                    }
-
-                    .page-about-footer__id {
-                        color: var(--color-surface-4);
-                        font-weight: 600;
-                    }
-                }
-
-                .page-about-footer__whereru {
-                    display: flex;
-                    align-items: center;
-
-                    .page-about-footer__iamhere {
-                        $img-value-length: 18px;
+                    .page-about-footer__user {
                         display: flex;
+                        align-items: center;
+                        gap: 0.25rem;
 
-                        a {
-                            padding: 5px;
-                            transition: 150ms ease;
-                            border-radius: 50%;
+                        .page-about-footer__avatar {
+                            $img-value-length: 20px;
 
                             img {
                                 display: block;
                                 width: $img-value-length;
                                 height: $img-value-length;
+                                border-radius: 50%;
                                 user-select: none;
                             }
+                        }
 
-                            &:hover {
-                                background: var(--border-color-base);
+                        .page-about-footer__name {
+                            font-weight: 600;
+                        }
+
+                        .page-about-footer__id {
+                            color: var(--color-surface-4);
+                            font-weight: 600;
+                        }
+                    }
+
+                    .page-about-footer__whereru {
+                        display: flex;
+                        align-items: center;
+
+                        .page-about-footer__iamhere {
+                            $img-value-length: 18px;
+                            display: flex;
+
+                            a {
+                                padding: 5px;
+                                transition: 150ms ease;
+                                border-radius: 50%;
+
+                                img {
+                                    display: block;
+                                    width: $img-value-length;
+                                    height: $img-value-length;
+                                    user-select: none;
+                                }
+
+                                &:hover {
+                                    background: var(--border-color-base);
+                                }
                             }
                         }
                     }

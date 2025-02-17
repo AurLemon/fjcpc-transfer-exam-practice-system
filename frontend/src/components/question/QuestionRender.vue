@@ -245,32 +245,10 @@ const getQuestions = async (params?: any, callback?: any) => {
         nextPid.value = response.data.data.next_pid
         prevPid.value = response.data.data.prev_pid
 
-        if (isFirstLoad.value) {
-            for (let i = 0; i < sequence.value.length; i++) {
-                const pid = sequence.value[i]
+        await skipDoneQuestion()
 
-                const isDone = await userStore.isProgress(pid)
-
-                if (!isDone) {
-                    const existingQuestion = questions.value.find((q) => q.pid === pid)
-
-                    if (existingQuestion) {
-                        currentId.value = existingQuestion.index
-                        nextPid.value = pid
-                    } else {
-                        await getQuestions({ index: i + 1 }, () => {
-                            currentId.value = i + 1
-                            nextPid.value = sequence.value[i]
-                        })
-
-                        if (prevPid.value) {
-                            await getQuestions({ prev_pid: prevPid.value })
-                        }
-                    }
-
-                    return
-                }
-            }
+        if (questions.value.length === 0) {
+            await getQuestions({ index: 1 })
         }
 
         if (callback) {
@@ -288,6 +266,43 @@ const getQuestions = async (params?: any, callback?: any) => {
         }
     } finally {
         isLoadQuestion.value = false
+    }
+}
+
+const skipDoneQuestion = async () => {
+    if (isFirstLoad.value) {
+        for (let i = 0; i < sequence.value.length; i++) {
+            const pid = sequence.value[i]
+            const isDone = await userStore.isProgress(pid)
+
+            if (!isDone) {
+                const existingQuestion = questions.value.find((q) => q.pid === pid)
+                console.log(questions.value, existingQuestion)
+
+                if (existingQuestion) {
+                    currentId.value = existingQuestion.index
+                    nextPid.value = pid
+                    isFirstLoad.value = false
+                    return
+                } else {
+                    await getQuestions({ index: i + 1 }, () => {
+                        currentId.value = i + 1
+                        nextPid.value = sequence.value[i]
+                    })
+
+                    if (prevPid.value) {
+                        await getQuestions({ prev_pid: prevPid.value })
+                    }
+
+                    if (nextPid.value) {
+                        await getQuestions({ next_pid: nextPid.value })
+                    }
+                }
+
+                isFirstLoad.value = false
+                return
+            }
+        }
     }
 }
 
