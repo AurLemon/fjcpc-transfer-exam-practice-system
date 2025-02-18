@@ -1,5 +1,7 @@
 <script lang="ts" setup>
+import dayjs from 'dayjs'
 import { useCardStore } from '@/stores/card'
+
 const cardStore = useCardStore()
 </script>
 
@@ -21,7 +23,10 @@ const cardStore = useCardStore()
                 </a>
             </div>
         </div>
-        <div class="page-footer-copyright">This project based on Vue.js + Nest.js, coding and design by AurLemon. © 2024 AurLemon under License MIT</div>
+        <div class="page-footer-copyright">
+            This project based on Vue.js + Nest.js under License MIT, coding and design by AurLemon. ©
+            {{ dayjs().year() > 2024 ? `2024 - ${dayjs().year()}` : 2024 }} AurLemon All rights reserved.
+        </div>
     </footer>
 </template>
 
