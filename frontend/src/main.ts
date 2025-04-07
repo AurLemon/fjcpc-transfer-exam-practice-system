@@ -11,6 +11,13 @@ import './assets/styles/main.scss'
 import './assets/styles/tippy.scss'
 import 'material-icons/iconfont/material-icons.css'
 
+import Clarity from '@microsoft/clarity'
+const projectId = "qacabhblz6"
+
+if (import.meta.env.PROD) {
+  Clarity.init(projectId)
+}
+
 const app = createApp(App)
 
 app.use(createPinia())
