@@ -42,7 +42,7 @@ const cardStore = useCardStore()
     margin-bottom: 0.5rem;
 
     @include screen.media-screen(mobile) {
-        max-height: 90px;
+        max-height: 100px;
         overflow: hidden;
         transition: focus.$focus-mode-transition-duration;
 
