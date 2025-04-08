@@ -12,7 +12,7 @@ import './assets/styles/tippy.scss'
 import 'material-icons/iconfont/material-icons.css'
 
 import Clarity from '@microsoft/clarity'
-const projectId = "qacabhblz6"
+const projectId = "m61b0fjnza"
 
 if (import.meta.env.PROD) {
   Clarity.init(projectId)
