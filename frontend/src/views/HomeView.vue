@@ -29,6 +29,14 @@ const openLoginCard = () => {
                 <img src="@/assets/images/favicon.png" v-tippy="{ content: '致敬传奇主唱井芹仁菜' }" />
             </div>
         </div>
+        <div class="page-guide-content">
+            <div class="page-guide-content__subtitle">船政上什么课？实习什么时候？选修课有什么？其它三个学校怎么样？……</div>
+            <div class="page-guide-content__title">
+                <b>船政FAQ页</b>和<b>讨论板块</b>大概将于4月20日前上线<br />
+                <div class="tips">加讨论页是因为找了几个同学帮忙问问其他三个学校的要不要这个网站的 那正好加个交流区OvO</div>
+                <div class="tips">其实4月21号甚至5月再开始刷都来得及……</div>
+            </div>
+        </div>
         <div class="page-guide-desc">
             <div class="page-guide-desc__block">
                 <div class="page-guide-desc__icon material-icons">developer_board</div>
@@ -115,8 +123,8 @@ const openLoginCard = () => {
 .page-guide {
     display: flex;
     flex-direction: column;
-    background: radial-gradient(ellipse at 5% 0%, rgb(57 157 191 / 6%) 0, transparent 75%),
-        radial-gradient(ellipse at 60% 0%, rgb(15 121 145 / 6%) 0, transparent 75%);
+    background:
+        radial-gradient(ellipse at 5% 0%, rgb(57 157 191 / 6%) 0, transparent 75%), radial-gradient(ellipse at 60% 0%, rgb(15 121 145 / 6%) 0, transparent 75%);
     background-size: auto 35%;
     background-repeat: no-repeat;
     overflow-y: auto;
@@ -204,6 +212,30 @@ const openLoginCard = () => {
                 transform: scale(0.98);
                 transition-duration: 150ms;
             }
+        }
+    }
+
+    .page-guide-content {
+        text-align: center;
+        border: 1px solid var(--border-color-base);
+        border-radius: 12px;
+        padding: 1rem;
+
+        .page-guide-content__subtitle {
+            font-size: 14px;
+            color: var(--color-base--subtle);
+        }
+
+        .page-guide-content__title {
+            color: var(--color-base--emphasized);
+            font-size: 1.25rem;
+        }
+
+        .tips {
+            color: var(--color-base--subtle);
+            font-size: 12px;
+            margin-top: 4px;
+            text-decoration: line-through;
         }
     }
 
