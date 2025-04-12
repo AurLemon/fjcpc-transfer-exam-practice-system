@@ -425,7 +425,13 @@ onMounted(() => {
                     </div>
                     <div class="page-stat-data__item">
                         <div class="page-stat-data__label">错误率</div>
-                        <div class="page-stat-data__value">{{ ((userWrongCount / userStore.profile.user_progress.current) * 100).toFixed(2) }}%</div>
+                        <div class="page-stat-data__value">
+                            {{
+                                userStore.profile.user_progress.current && Number.isFinite(userWrongCount)
+                                    ? ((userWrongCount / userStore.profile.user_progress.current) * 100 || 0).toFixed(2)
+                                    : 0
+                            }}%
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1063,7 +1069,8 @@ onMounted(() => {
                 overflow: hidden;
 
                 &.user {
-                    background: radial-gradient(ellipse at 5% 0%, rgba(191, 57, 137, 0.04) 0, transparent 75%),
+                    background:
+                        radial-gradient(ellipse at 5% 0%, rgba(191, 57, 137, 0.04) 0, transparent 75%),
                         radial-gradient(ellipse at 60% 0%, rgba(9, 107, 222, 0.04) 0, transparent 75%);
                 }
 
