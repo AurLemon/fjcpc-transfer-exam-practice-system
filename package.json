@@ -20,7 +20,7 @@
     "install": "npm-run-all --parallel frontend:install",
     "service": "npm-run-all --serial frontend:build start",
     "service:dev": "npm-run-all --parallel frontend:dev start",
-    "frontend:build": "rm -rf ./public/* && cd frontend && pnpm run build",
+    "frontend:build": "cd frontend && pnpm run build",
     "frontend:dev": "cd frontend && pnpm run dev",
     "frontend:install": "cd frontend && pnpm install",
     "command": "ts-node src/cli.ts"
