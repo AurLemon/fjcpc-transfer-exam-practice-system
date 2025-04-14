@@ -26,6 +26,7 @@
         "command": "ts-node src/cli.ts"
     },
     "dependencies": {
+        "@nestjs-modules/ioredis": "^2.0.2",
         "@nestjs/axios": "^3.0.3",
         "@nestjs/common": "^10.0.0",
         "@nestjs/config": "^3.2.3",
@@ -40,6 +41,7 @@
         "child_process": "^1.0.2",
         "crypto": "^1.0.1",
         "dotenv": "^16.4.5",
+        "ioredis": "^5.6.1",
         "jsonwebtoken": "^9.0.2",
         "mysql": "^2.18.1",
         "nestjs-command": "^3.1.4",

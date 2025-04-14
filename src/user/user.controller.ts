@@ -10,6 +10,7 @@ import { UserService } from './user.service';
 import { TokenService } from '../auth/token.service';
 import { CryptoUtil } from '../common/crypto.util';
 import { TokenGuard } from '../auth/token.guard';
+import { RedisCacheService } from '../redis/redis.service';
 
 import { User } from '../database/entities/user.entity';
 import { UserSetting } from '../database/entities/user_setting.entity';
@@ -24,6 +25,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
     private readonly cryptoUtil: CryptoUtil,
+    private readonly redisCacheService: RedisCacheService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(UserSetting)
@@ -401,8 +403,23 @@ export class UserController {
 
       if (idNumber && showUserStat) {
         try {
-          const [encryptedName, nameKey] = user.name.split('$');
-          decryptedName = this.cryptoUtil.aesDecrypt(encryptedName, nameKey);
+          const cacheKey = `user:${userUuid}:decryptedName`;
+          const cachedDecryptedName =
+            await this.redisCacheService.get(cacheKey);
+
+          if (cachedDecryptedName) {
+            decryptedName = cachedDecryptedName;
+          } else {
+            const [encryptedName, nameKey] = user.name.split('$');
+            decryptedName = this.cryptoUtil.aesDecrypt(encryptedName, nameKey);
+
+            await this.redisCacheService.set(
+              cacheKey,
+              decryptedName,
+              60 * 60 * 24,
+            );
+          }
+
           modifiedName =
             decryptedName.length > 1
               ? decryptedName[0] + '*'.repeat(decryptedName.length - 1)

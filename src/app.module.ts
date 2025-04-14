@@ -18,6 +18,7 @@ import { Question } from './database/entities/question.entity';
 import { DoneQuestion } from './database/entities/done_question.entity';
 import { StarQuestion } from './database/entities/star_question.entity';
 import { UpdatedQuestion } from './database/entities/updated_question.entity';
+import { RedisModule } from './redis/redis.module';
 
 import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
@@ -29,9 +30,8 @@ import { MigrateService } from './migrate/migrate.service';
 @Module({
   imports: [
     CommandModule,
-    ConfigModule.forRoot({
-      load: [config],
-    }),
+    ConfigModule.forRoot({ load: [config] }),
+    RedisModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -94,6 +94,6 @@ import { MigrateService } from './migrate/migrate.service';
     AdminModule,
     CryptoModule,
   ],
-  providers: [MigrateService],
+  providers: [MigrateService, RedisModule],
 })
 export class AppModule {}

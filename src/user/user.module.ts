@@ -14,6 +14,7 @@ import { Question } from '../database/entities/question.entity';
 import { RequestInfo } from '../database/entities/request_info.entity';
 import { DoneQuestion } from '../database/entities/done_question.entity';
 import { StarQuestion } from '../database/entities/star_question.entity';
+import { RedisModule } from '../redis/redis.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { StarQuestion } from '../database/entities/star_question.entity';
     ]),
     forwardRef(() => TokenModule),
     CryptoModule,
+    RedisModule,
   ],
   controllers: [UserController],
   providers: [UserService],
