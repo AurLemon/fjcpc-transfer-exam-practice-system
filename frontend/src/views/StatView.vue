@@ -630,14 +630,19 @@ onMounted(() => {
                                 <div class="page-stat-userstat__wrongcount page-stat-userstat__tag" v-tippy="{ content: '错误率' }">
                                     {{ ((user.wrong_count / user.user_progress.current) * 100).toFixed(2) }}%
                                 </div>
-                                <div class="page-stat-userstat__mainsubject page-stat-userstat__tag" v-tippy="{ content: '主专业课' }">
+                                <div
+                                    class="page-stat-userstat__mainsubject page-stat-userstat__tag"
+                                    v-if="user.main_profession_subject"
+                                    v-tippy="{ content: '主专业课' }"
+                                >
                                     {{ questionStore.renderQuestionSubject(2, user.main_profession_subject) }}
                                 </div>
                             </div>
                             <div class="page-stat-userstat__regdate" v-tippy="{ content: `注册时间：${formatTimestamp(user.reg_date)}` }">
                                 <span class="emphasized">{{ formatTimeAgo(user.reg_date) }}</span> 注册
                             </div>
-                            <div class="page-stat-userstat__location">{{ user.profession }}（{{ user.school }}）</div>
+                            <div class="page-stat-userstat__location" v-if="user.profession && user.school">{{ user.profession }}（{{ user.school }}）</div>
+                            <div class="page-stat-userstat__location" v-else>注册用户</div>
                         </div>
                         <div class="page-stat-userstat__stat">
                             <div class="page-stat-userstat__progress">

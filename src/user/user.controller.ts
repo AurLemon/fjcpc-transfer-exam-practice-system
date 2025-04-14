@@ -397,22 +397,31 @@ export class UserController {
 
     for (const user of users) {
       const userUuid = user.uuid;
-
-      const userSetting = await this.userSettingRepository.findOne({
-        where: { user: userUuid },
-      });
-      const showUserStat = userSetting?.setting?.show_user_stat !== false;
+      const idNumber = user.id_number;
 
       let decryptedName = null;
       let modifiedName = null;
+      let showUserStat = false;
 
-      if (showUserStat) {
-        const [encryptedName, nameKey] = user.name.split('$');
-        decryptedName = this.cryptoUtil.aesDecrypt(encryptedName, nameKey);
-        modifiedName =
-          decryptedName.length > 1
-            ? decryptedName[0] + '*'.repeat(decryptedName.length - 1)
-            : decryptedName;
+      if (idNumber) {
+        const userSetting = await this.userSettingRepository.findOne({
+          where: { user: userUuid },
+        });
+        showUserStat = userSetting?.setting?.show_user_stat !== false;
+
+        if (showUserStat) {
+          try {
+            const [encryptedName, nameKey] = user.name.split('$');
+            decryptedName = this.cryptoUtil.aesDecrypt(encryptedName, nameKey);
+            modifiedName =
+              decryptedName.length > 1
+                ? decryptedName[0] + '*'.repeat(decryptedName.length - 1)
+                : decryptedName;
+          } catch (error) {
+            decryptedName = null;
+            modifiedName = null;
+          }
+        }
       }
 
       const doneQuestionsCount = await this.doneQuestionRepository.count({
@@ -426,26 +435,30 @@ export class UserController {
       const totalCourse1Count = await this.questionRepository.count({
         where: { course: 1 },
       });
+
       const totalQuestionsCount = totalCourse2SubjectCount + totalCourse1Count;
 
       const starQuestionsCount = await this.starQuestionRepository.count({
         where: { user: userUuid, folder: 'wrong' },
       });
 
-      userStats.push({
+      const userStatEntry = {
         uuid: user.uuid,
-        name: showUserStat ? modifiedName : null,
-        profession: user.profession,
-        school: user.school,
+        name: idNumber ? (showUserStat ? modifiedName : null) : null,
+        profession: idNumber ? user.profession : null,
+        school: idNumber ? user.school : null,
+        id_number: idNumber || null,
+        main_profession_subject: mainProfessionSubject,
         last_login: new Date(user.last_login).getTime(),
         reg_date: new Date(user.reg_date).getTime(),
-        main_profession_subject: user.profession_main_subject,
         user_progress: {
           current: doneQuestionsCount,
           total: totalQuestionsCount,
         },
         wrong_count: starQuestionsCount,
-      });
+      };
+
+      userStats.push(userStatEntry);
     }
 
     userStats.sort((a, b) => a.reg_date - b.reg_date);
