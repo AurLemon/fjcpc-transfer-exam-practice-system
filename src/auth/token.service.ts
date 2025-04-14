@@ -94,10 +94,11 @@ export class TokenService {
     message: string;
     result?: {
       uuid: string;
-      id_number: string;
-      name: string;
-      school: string;
-      profession: string;
+      nick: string | null;
+      id_number: string | null;
+      name: string | null;
+      school: string | null;
+      profession: string | null;
       profession_main_subject: number;
       last_login: Date;
       reg_date: Date;
@@ -127,6 +128,7 @@ export class TokenService {
       const { uuid } = decoded as { uuid: string };
 
       const user = await this.userService.findUserByUuid(uuid);
+
       if (!user) {
         return {
           valid: false,
@@ -135,13 +137,24 @@ export class TokenService {
         };
       }
 
-      const [encryptedIdNumber, idNumberKey] = user.id_number.split('$');
-      const [encryptedName, nameKey] = user.name.split('$');
-      const decryptedIdNumber = this.cryptoUtil.aesDecrypt(
-        encryptedIdNumber,
-        idNumberKey,
-      );
-      const decryptedName = this.cryptoUtil.aesDecrypt(encryptedName, nameKey);
+      let encryptedIdNumber: string,
+        idNumberKey: string,
+        decryptedIdNumber: string;
+
+      if (user.id_number) {
+        [encryptedIdNumber, idNumberKey] = user.id_number.split('$');
+        decryptedIdNumber = this.cryptoUtil.aesDecrypt(
+          encryptedIdNumber,
+          idNumberKey,
+        );
+      }
+
+      let encryptedName: string, nameKey: string, decryptedName: string;
+
+      if (user.name) {
+        [encryptedName, nameKey] = user.name.split('$');
+        decryptedName = this.cryptoUtil.aesDecrypt(encryptedName, nameKey);
+      }
 
       await this.updateLastLogin(user.uuid);
 
@@ -151,10 +164,11 @@ export class TokenService {
         message: 'Token 有效',
         result: {
           uuid: user.uuid,
-          id_number: decryptedIdNumber,
-          name: decryptedName,
-          school: user.school,
-          profession: user.profession,
+          nick: user.nick || null,
+          id_number: decryptedIdNumber || null,
+          name: decryptedName || null,
+          school: user.school || null,
+          profession: user.profession || null,
           profession_main_subject: user.profession_main_subject,
           last_login: user.last_login,
           reg_date: user.reg_date,
@@ -162,6 +176,8 @@ export class TokenService {
         },
       };
     } catch (err) {
+      console.log(err);
+
       return {
         valid: false,
         reason: 'unexpected_error',

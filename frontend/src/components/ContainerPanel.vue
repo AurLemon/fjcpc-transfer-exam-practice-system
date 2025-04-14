@@ -8,6 +8,22 @@ import { useUserStore } from '@/stores/user'
 import { useQuestionStore } from '@/stores/question'
 import { useNotifyStore } from '@/stores/notify'
 
+export interface StarItem {
+    pid: string
+    course: number
+    subject: number
+    time: string
+    type: number
+}
+
+export interface ProgressData {
+    pid: string
+    course: number
+    subject: number
+    time: string
+    type: number
+}
+
 export default defineComponent({
     name: 'ContainerPanel',
     data() {
@@ -127,7 +143,10 @@ export default defineComponent({
             </div>
         </div>
         <div class="container-panel-status">
-            <div class="container-panel-status__progress" v-if="questionStore.questionInfo.cultural_lesson && questionStore.questionInfo.profession_lesson && userStore.profile.user_progress.total">
+            <div
+                class="container-panel-status__progress"
+                v-if="questionStore.questionInfo.cultural_lesson && questionStore.questionInfo.profession_lesson && userStore.profile.user_progress.total"
+            >
                 <div class="container-panel-status__progressLabel">
                     做题进度
                     <span class="value">
@@ -141,12 +160,18 @@ export default defineComponent({
         </div>
         <div class="container-panel-profile">
             <div class="container-panel-profile-wrapper container-panel-profile-info" :class="{ blur: !userStore.login.isLogged || authStore.isLoading }">
-                <div class="container-panel-profile__greeting">
+                <div class="container-panel-profile__greeting" v-if="userStore.profile.name">
                     {{ userStore.login.isLogged && userStore.profile.name.length > 0 ? `${userStore.profile.name[0]}同学，你好。` : '-' }}
                 </div>
+                <div class="container-panel-profile__greeting" v-else>
+                    {{ userStore.login.isLogged && userStore.profile.nick.length > 0 ? `${userStore.profile.nick}，你好。` : '-' }}
+                </div>
                 <div class="container-panel-profile__inner">
-                    <div class="container-panel-profile__idnumber">
+                    <div class="container-panel-profile__account" v-if="userStore.profile.id_number">
                         {{ userStore.login.isLogged && userStore.profile.id_number.length > 0 ? userStore.profile.id_number : '-' }}
+                    </div>
+                    <div class="container-panel-profile__account" v-else>
+                        {{ userStore.login.isLogged && userStore.profile.uuid.length > 0 ? userStore.profile.uuid : '-' }}
                     </div>
                     <div class="container-panel-profile__buttons">
                         <div class="container-panel-profile__button container-panel-profile__edit" @click="openLoginCard" v-tippy="{ content: '切换账户' }">
@@ -157,13 +182,14 @@ export default defineComponent({
                         </div>
                     </div>
                 </div>
-                <div class="container-panel-profile__detail">
+                <div class="container-panel-profile__detail" v-if="userStore.profile.profession && userStore.profile.school">
                     {{
                         userStore.login.isLogged && userStore.profile.profession.length > 0 && userStore.profile.school.length > 0
                             ? `${userStore.profile.profession}（${userStore.profile.school}）`
                             : '-'
                     }}
                 </div>
+                <div class="container-panel-profile__detail" v-else>注册用户</div>
             </div>
             <div class="container-panel-profile-wrapper container-panel-profile-login" v-if="!userStore.login.isLogged">
                 <div class="container-panel-profile-login__title">未登录</div>
@@ -212,14 +238,20 @@ export default defineComponent({
                 font-size: 24px;
                 font-weight: bold;
                 margin-bottom: 5px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .container-panel-profile__inner {
                 position: relative;
             }
 
-            .container-panel-profile__idnumber {
+            .container-panel-profile__account {
                 max-width: calc(100% - 64px);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
                 height: 26px;
                 padding: 4px 2px;
                 font-size: 14px;

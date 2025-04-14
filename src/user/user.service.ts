@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { User } from '../database/entities/user.entity';
 import { UserSetting } from '../database/entities/user_setting.entity';
 import { CryptoUtil } from '../common/crypto.util';
+import { verifyIdNumber } from '../api/api';
 
 @Injectable()
 export class UserService {
@@ -48,14 +49,33 @@ export class UserService {
     return null;
   }
 
-  // 检查用户的密码是否正确
-  async checkPassword(id_number: string, password: string): Promise<boolean> {
-    const user = await this.findByIdNumber(id_number);
+  // 更新用户昵称
+  async updateNick(uuid: string, nick: string): Promise<void> {
+    await this.userRepository.update(uuid, { nick });
+  }
 
-    if (!user) {
-      return false;
+  // 检查用户的密码是否正确（根据身份证号或昵称）
+  async checkPassword(identifier: string, password: string): Promise<boolean> {
+    const idNumberRegex = /^[1-9]\d{14}(\d{2}[0-9Xx])?$/;
+
+    if (idNumberRegex.test(identifier)) {
+      const user = await this.findByIdNumber(identifier);
+      if (user) {
+        return this.validatePassword(user, password);
+      }
+    } else {
+      const user = await this.findByNick(identifier);
+
+      if (user) {
+        return this.validatePassword(user, password);
+      }
     }
 
+    return false;
+  }
+
+  // 私有方法：验证密码逻辑
+  private validatePassword(user: User, password: string): boolean {
     const [storedEncryptedPassword, storedKey] = user.password.split('$');
     let encryptedPassword;
 
@@ -70,52 +90,144 @@ export class UserService {
 
   // 新增用户
   async createUser(
-    id_number: string,
-    name: string,
+    id_number: string | null,
+    nick: string | null,
+    name: string | null,
     password: string,
-    school: string,
-    profession: string,
-    main_subject?: number,
+    school: string | null,
+    profession: string | null,
+    main_subject: number,
   ): Promise<User> {
+    if (!id_number && !nick) {
+      throw new Error('Must provide id number or nick');
+    }
+
     const regDate = new Date();
 
-    const key = this.generateRandomKey();
+    const identifier = this.cryptoUtil.hashEncrypt(
+      id_number ? id_number : nick!,
+    );
 
-    const encryptedIdNumber = `${this.cryptoUtil.aesEncrypt(id_number, key)}$${key}`;
-    const encryptedName = `${this.cryptoUtil.aesEncrypt(name, key)}$${key}`;
+    let encryptedIdNumber: string | null = null;
+    if (id_number) {
+      const idKey = this.generateRandomKey();
+      const encryptedId = this.cryptoUtil.aesEncrypt(id_number, idKey);
+      encryptedIdNumber = `${encryptedId}$${idKey}`;
+    }
 
-    let encryptedPassword;
+    let encryptedName: string | null = null;
+    if (name) {
+      const nameKey = this.generateRandomKey();
+      const encryptedNameVal = this.cryptoUtil.aesEncrypt(name, nameKey);
+      encryptedName = `${encryptedNameVal}$${nameKey}`;
+    }
+
+    let encryptedPassword: string;
+
     if (password === 'empty') {
       const emptyKey = this.generateRandomKey();
-      const encryptedEmptyPassword = this.cryptoUtil.aesEncrypt(
-        'empty',
-        emptyKey,
-      );
-      encryptedPassword = `${encryptedEmptyPassword}$${emptyKey}`;
+      const encryptedEmpty = this.cryptoUtil.aesEncrypt('empty', emptyKey);
+      encryptedPassword = `${encryptedEmpty}$${emptyKey}`;
     } else {
-      const passwordKey = this.generateRandomKey();
-      const encryptedActualPassword = this.cryptoUtil.aesEncrypt(
-        password,
-        passwordKey,
-      );
-      encryptedPassword = `${encryptedActualPassword}$${passwordKey}`;
+      const passKey = this.generateRandomKey();
+      const encryptedPass = this.cryptoUtil.aesEncrypt(password, passKey);
+      encryptedPassword = `${encryptedPass}$${passKey}`;
     }
 
     const newUser = this.userRepository.create({
+      nick: nick,
       uuid: crypto.randomUUID(),
-      identifier: this.cryptoUtil.hashEncrypt(id_number),
+      identifier: identifier,
       id_number: encryptedIdNumber,
       name: encryptedName,
       password: encryptedPassword,
-      school,
-      profession,
+      school: school,
+      profession: profession,
       permission: 0,
-      profession_main_subject: main_subject ?? -1,
+      profession_main_subject: main_subject,
       last_login: new Date(),
       reg_date: regDate,
     });
 
     return this.userRepository.save(newUser);
+  }
+
+  // 传入 UUID 和未加密的身份证号与船政系统获取身份证数据并同步到数据库内
+  async syncIdNumberInfo(
+    uuid: string,
+    id_number: string,
+  ): Promise<{
+    status: 'success' | 'failed';
+    messages: string;
+    info: {
+      name: string;
+      school: string;
+      profession: string;
+    } | null;
+  }> {
+    if (!id_number || !uuid) throw new Error('Missing params.');
+
+    try {
+      const user = await this.findUserByUuid(uuid);
+      if (!user) {
+        return {
+          status: 'failed',
+          messages: '用户不存在',
+          info: null,
+        };
+      }
+
+      const apiResponse = await verifyIdNumber(id_number);
+
+      if (apiResponse?.data?.outmap?.err === '身份证错误！') {
+        return {
+          status: 'failed',
+          messages: '身份证不合法',
+          info: null,
+        };
+      }
+
+      if (apiResponse?.data?.outmap?.err !== 'success') {
+        return {
+          status: 'failed',
+          messages: '身份证验证失败: ' + apiResponse.data.outmap.err,
+          info: null,
+        };
+      }
+
+      const userInfo = apiResponse.data.outmap.xs;
+
+      const idKey = this.generateRandomKey();
+      const encryptedId = this.cryptoUtil.aesEncrypt(id_number, idKey);
+      const encryptedIdNumber = `${encryptedId}$${idKey}`;
+
+      const nameKey = this.generateRandomKey();
+      const encryptedName = this.cryptoUtil.aesEncrypt(userInfo.xm, nameKey);
+      const encryptedNameVal = `${encryptedName}$${nameKey}`;
+
+      user.id_number = encryptedIdNumber;
+      user.name = encryptedNameVal;
+      user.school = userInfo.xx;
+      user.profession = userInfo.zy;
+
+      await this.userRepository.save(user);
+
+      return {
+        status: 'success',
+        messages: '同步成功',
+        info: {
+          name: userInfo.xm,
+          school: userInfo.xx,
+          profession: userInfo.zy,
+        },
+      };
+    } catch (error) {
+      return {
+        status: 'failed',
+        messages: `同步失败: ${error.message}`,
+        info: null,
+      };
+    }
   }
 
   // 通过 UUID 查找用户
@@ -160,6 +272,18 @@ export class UserService {
     }
 
     return null;
+  }
+
+  // 通过昵称查询用户
+  async findByNick(nick: string): Promise<User | null> {
+    const identifier = this.cryptoUtil.hashEncrypt(nick);
+    let user = await this.userRepository.findOne({ where: { identifier } });
+
+    if (!user) {
+      user = await this.userRepository.findOne({ where: { nick } });
+    }
+
+    return user;
   }
 
   // 更新用户密码

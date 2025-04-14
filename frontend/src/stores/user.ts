@@ -10,7 +10,7 @@ import { useAuthStore } from './auth'
 import { useQuestionStore } from './question'
 import { useNotifyStore } from './notify'
 
-export interface StarItem {
+interface StarItem {
     pid: string
     course: number
     subject: number
@@ -18,7 +18,7 @@ export interface StarItem {
     type: number
 }
 
-export interface ProgressData {
+interface ProgressData {
     pid: string
     course: number
     subject: number
@@ -31,7 +31,7 @@ interface StarProgressData {
     items: StarItem[]
 }
 
-export interface UserSettings {
+interface UserSettings {
     user_main_profession_subject: number
     auto_sync_data: boolean
     auto_save_progress: boolean
@@ -48,6 +48,7 @@ export const useUserStore = defineStore('user', {
             isResetPassword: false
         },
         profile: {
+            nick: '',
             uuid: '',
             name: '',
             id_number: '',

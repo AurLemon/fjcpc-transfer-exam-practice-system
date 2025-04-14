@@ -140,6 +140,67 @@ const crawlQuestion = async () => {
         crawlStatus.value = `请求失败`
     }
 }
+
+const isSyncAccount = ref<boolean>(false)
+const isSyncLoading = ref<boolean>(false)
+const account = ref('')
+const status = ref('')
+
+const syncAccountStatus = () => {
+    isSyncAccount.value = !isSyncAccount.value
+}
+
+const syncIdNumber = async () => {
+    isSyncLoading.value = true
+    status.value = '加载中'
+
+    try {
+        if (!account.value) {
+            status.value = '请输入身份证号'
+            return
+        }
+
+        const publicKey = await getPublicKey()
+        if (!publicKey) {
+            status.value = '获取公钥失败，请重试'
+            return
+        }
+
+        const encryptedIdNumber = sm2Encrypt(account.value, publicKey)
+        if (!encryptedIdNumber) {
+            status.value = '加密失败，请检查输入'
+            return
+        }
+
+        const response: any = await post(
+            '/user/sync',
+            {
+                id_number: encryptedIdNumber
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${authStore.readToken()}`
+                }
+            }
+        )
+
+        if (response.data.code === 200) {
+            status.value = '同步成功'
+            await authStore.getUserProfile()
+            account.value = ''
+        } else {
+            status.value = `同步失败：${response.message || '未知错误'}`
+        }
+    } catch (error: any) {
+        status.value = `同步失败：${error.message || '网络错误'}`
+    } finally {
+        setTimeout(() => {
+            isSyncLoading.value = false
+            isSyncAccount.value = false
+            status.value = ''
+        }, 5000)
+    }
+}
 </script>
 
 <template>
@@ -147,9 +208,12 @@ const crawlQuestion = async () => {
         <div class="page-container-title">设置</div>
         <div class="page-advanced-user" v-if="userStore.login.isLogged && !userStore.login.refreshing">
             <div class="page-advanced-user__info">
-                <div class="page-advanced-user__wrapper">
+                <div class="page-advanced-user__wrapper" v-if="userStore.profile.name && userStore.profile.id_number">
                     <div class="page-advanced-user__name">{{ userStore.profile.name }}</div>
                     <div class="page-advanced-user__id">{{ userStore.profile.id_number }}</div>
+                </div>
+                <div class="page-advanced-user__wrapper" v-else>
+                    <div class="page-advanced-user__name">{{ userStore.profile.nick }}</div>
                 </div>
                 <div class="page-advanced-user__uuid">{{ userStore.profile.uuid }}</div>
             </div>
@@ -177,6 +241,27 @@ const crawlQuestion = async () => {
                 >
                     <div class="id">{{ subject.subject }}</div>
                     {{ subject.name }}
+                </div>
+            </div>
+            <div class="page-advanced-basic__idnumber" v-if="userStore.login.isLogged">
+                <div class="page-advanced-basic__name">昵称</div>
+                <div class="page-advanced-basic__wrapper">{{ userStore.profile.nick ? userStore.profile.nick : '无' }}</div>
+            </div>
+            <div class="page-advanced-basic__idnumber" v-if="userStore.login.isLogged">
+                <div class="page-advanced-basic__name">
+                    船政转轨练习系统对应的身份证
+                    <div class="page-advanced-basic__tags" v-if="!userStore.profile.id_number">
+                        <div class="page-advanced-basic__tag add" @click="syncAccountStatus" v-if="!isSyncAccount">新增</div>
+                        <div class="page-advanced-basic__tag cancel" @click="syncAccountStatus" v-if="isSyncAccount">取消</div>
+                        <div class="page-advanced-basic__tag sync" @click="syncIdNumber" v-if="isSyncAccount">同步</div>
+                        <div class="page-advanced-basic__tag status" v-if="isSyncAccount && isSyncLoading">{{ status }}</div>
+                    </div>
+                </div>
+                <div class="page-advanced-basic__wrapper" v-if="!isSyncAccount">
+                    {{ userStore.profile.id_number ? userStore.profile.id_number : '无' }}
+                </div>
+                <div class="page-advanced-basic__wrapper" v-else>
+                    <input v-model="account" type="text" placeholder="请输入身份证号" class="page-advanced-basic__input" />
                 </div>
             </div>
             <div class="page-advanced-basic__setting" v-if="userStore.login.isLogged && !userStore.login.refreshing">
@@ -365,7 +450,8 @@ const crawlQuestion = async () => {
         gap: 0.75rem;
         margin-bottom: $value-page-gap * 1.75;
 
-        .page-advanced-basic__mainsubject {
+        .page-advanced-basic__mainsubject,
+        .page-advanced-basic__idnumber {
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
@@ -416,6 +502,50 @@ const crawlQuestion = async () => {
 
                 &:hover {
                     background: var(--color-base--subtle);
+                }
+            }
+
+            .page-advanced-basic__tags {
+                display: flex;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                color: var(--color-base--subtle);
+
+                .page-advanced-basic__tag {
+                    background: var(--border-color-input);
+                    padding: 1px 10px;
+                    border-radius: 16px;
+                    transition: 300ms;
+
+                    &:hover {
+                        color: var(--color-surface-0);
+                        background: var(--color-primary);
+                        cursor: pointer;
+                    }
+
+                    &.sync {
+                        color: var(--color-surface-0);
+                        background: var(--success-color);
+                    }
+                }
+            }
+        }
+
+        .page-advanced-basic__idnumber {
+            .page-advanced-basic__name {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .page-advanced-basic__wrapper {
+                width: 100%;
+                font-weight: 600;
+                font-size: 18px;
+
+                input {
+                    width: 100%;
                 }
             }
         }

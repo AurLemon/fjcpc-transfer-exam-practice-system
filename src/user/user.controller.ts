@@ -43,15 +43,22 @@ export class UserController {
   async userProfile(@Req() req: Request) {
     const userInfo: any = req.user;
 
-    const modifiedName =
-      userInfo.name.length > 1
-        ? userInfo.name[0] + '*'.repeat(userInfo.name.length - 1)
-        : userInfo.name;
+    let modifiedIdNumber = null;
+    let modifiedName = null;
 
-    const modifiedIdNumber =
-      userInfo.id_number.substring(0, 6) +
-      '***********' +
-      userInfo.id_number.substring(17);
+    if (userInfo.id_number) {
+      modifiedIdNumber =
+        userInfo.id_number.substring(0, 6) +
+        '***********' +
+        userInfo.id_number.substring(17);
+    }
+
+    if (userInfo.name) {
+      modifiedName =
+        userInfo.name.length > 1
+          ? userInfo.name[0] + '*'.repeat(userInfo.name.length - 1)
+          : userInfo.name;
+    }
 
     const modifiedLastLogin = new Date(userInfo.last_login).getTime();
     const modifiedRegDate = new Date(userInfo.reg_date).getTime();
@@ -103,6 +110,39 @@ export class UserController {
       ...modifiedUserInfo,
       user_progress: userProgress,
     });
+  }
+
+  @UseGuards(TokenGuard)
+  @Post('sync')
+  async syncIdNumber(@Req() req: Request, @Body() body: any) {
+    try {
+      const user: any = req.user;
+      const encryptedIdNumber = body.id_number;
+      const uuid = user.uuid;
+
+      const decryptedIdNumber =
+        await this.cryptoUtil.decryptWithSM2(encryptedIdNumber);
+
+      const syncResult = await this.userService.syncIdNumberInfo(
+        uuid,
+        decryptedIdNumber,
+      );
+
+      if (syncResult.status === 'success') {
+        return ApiResponseUtil.success(200, {
+          message: '同步成功',
+          data: syncResult.info,
+        });
+      } else {
+        return ApiResponseUtil.error(400, 'sync_failed', syncResult.messages);
+      }
+    } catch (error) {
+      return ApiResponseUtil.error(
+        500,
+        'internal_error',
+        `同步失败: ${error.message}`,
+      );
+    }
   }
 
   @UseGuards(TokenGuard)

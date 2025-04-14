@@ -17,7 +17,7 @@ import { CanvasRenderer } from 'echarts/renderers'
 dayjs.extend(relativeTime)
 dayjs.locale('zh-cn')
 
-interface ProgressData {
+export interface ProgressData {
     pid: string
     course: number
     subject: number

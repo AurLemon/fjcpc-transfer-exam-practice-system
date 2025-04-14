@@ -125,6 +125,7 @@ export class MigrateService {
           // 如果没有找到用户，创建新用户
           newUser = await this.userService.createUser(
             id_number,
+            null,
             userInfo.xm,
             'empty',
             userInfo.xx,
