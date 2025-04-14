@@ -277,7 +277,6 @@ const skipDoneQuestion = async () => {
 
             if (!isDone) {
                 const existingQuestion = questions.value.find((q) => q.pid === pid)
-                console.log(questions.value, existingQuestion)
 
                 if (existingQuestion) {
                     currentId.value = existingQuestion.index
