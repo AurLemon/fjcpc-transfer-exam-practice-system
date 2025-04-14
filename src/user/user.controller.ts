@@ -72,10 +72,7 @@ export class UserController {
     };
 
     const culturalCourseCount = await this.doneQuestionRepository.count({
-      where: {
-        user: userInfo.uuid,
-        course: 1,
-      },
+      where: { user: userInfo.uuid, course: 1 },
     });
 
     let professionCourseCount = 0;
@@ -89,16 +86,11 @@ export class UserController {
     });
 
     const culturalTotal = await this.questionRepository.count({
-      where: {
-        course: 1,
-      },
+      where: { course: 1 },
     });
 
     const professionTotal = await this.questionRepository.count({
-      where: {
-        course: 2,
-        subject: userInfo.profession_main_subject,
-      },
+      where: { course: 2, subject: userInfo.profession_main_subject },
     });
 
     const userProgress = {
@@ -401,26 +393,23 @@ export class UserController {
 
       let decryptedName = null;
       let modifiedName = null;
-      let showUserStat = false;
 
-      if (idNumber) {
-        const userSetting = await this.userSettingRepository.findOne({
-          where: { user: userUuid },
-        });
-        showUserStat = userSetting?.setting?.show_user_stat !== false;
+      const userSetting = await this.userSettingRepository.findOne({
+        where: { user: userUuid },
+      });
+      const showUserStat = userSetting?.setting?.show_user_stat !== false;
 
-        if (showUserStat) {
-          try {
-            const [encryptedName, nameKey] = user.name.split('$');
-            decryptedName = this.cryptoUtil.aesDecrypt(encryptedName, nameKey);
-            modifiedName =
-              decryptedName.length > 1
-                ? decryptedName[0] + '*'.repeat(decryptedName.length - 1)
-                : decryptedName;
-          } catch (error) {
-            decryptedName = null;
-            modifiedName = null;
-          }
+      if (idNumber && showUserStat) {
+        try {
+          const [encryptedName, nameKey] = user.name.split('$');
+          decryptedName = this.cryptoUtil.aesDecrypt(encryptedName, nameKey);
+          modifiedName =
+            decryptedName.length > 1
+              ? decryptedName[0] + '*'.repeat(decryptedName.length - 1)
+              : decryptedName;
+        } catch (error) {
+          decryptedName = null;
+          modifiedName = null;
         }
       }
 
@@ -445,6 +434,7 @@ export class UserController {
       const userStatEntry = {
         uuid: user.uuid,
         name: idNumber ? (showUserStat ? modifiedName : null) : null,
+        nick: showUserStat ? user.nick : null,
         profession: idNumber ? user.profession : null,
         school: idNumber ? user.school : null,
         id_number: idNumber || null,
@@ -474,10 +464,7 @@ export class UserController {
 
     return ApiResponseUtil.success(200, {
       user_stat: userStats,
-      overview: {
-        user_count: userCount,
-        profession_count: professionCount,
-      },
+      overview: { user_count: userCount, profession_count: professionCount },
     });
   }
 }

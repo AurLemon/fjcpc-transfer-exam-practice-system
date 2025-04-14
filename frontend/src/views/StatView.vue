@@ -312,9 +312,10 @@ const handleShowSubType = (course: number) => {
 
 interface UserStatGroup {
     uuid: string
-    name: string
-    profession: string
-    school: string
+    nick: string | null
+    name: string | null
+    profession: string | null
+    school: string | null
     last_login: number
     reg_date: number
     main_profession_subject: number
@@ -617,8 +618,8 @@ onMounted(() => {
                 <div class="page-stat-userstat__itemwrapper" v-for="(user, index) in userStatGroup" :key="index">
                     <div class="page-stat-userstat__item" :class="{ user: user.uuid === userStore.profile.uuid }">
                         <div class="page-stat-userstat__info">
-                            <div class="page-stat-userstat__name" :class="{ hide: !user.name }">
-                                {{ user.name ?? '已隐藏' }}
+                            <div class="page-stat-userstat__name" :class="{ hide: !user.name && !user.nick }">
+                                {{ user.name ? (user.name ?? '已隐藏') : (user.nick ?? '已隐藏') }}
                                 <div class="page-stat-userstat__lastlogin" v-tippy="{ content: `上次登录：${formatTimestamp(user.last_login)}` }">
                                     {{ formatTimeAgo(user.last_login) }}
                                 </div>
@@ -1074,8 +1075,7 @@ onMounted(() => {
                 overflow: hidden;
 
                 &.user {
-                    background:
-                        radial-gradient(ellipse at 5% 0%, rgba(191, 57, 137, 0.04) 0, transparent 75%),
+                    background: radial-gradient(ellipse at 5% 0%, rgba(191, 57, 137, 0.04) 0, transparent 75%),
                         radial-gradient(ellipse at 60% 0%, rgba(9, 107, 222, 0.04) 0, transparent 75%);
                 }
 
