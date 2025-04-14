@@ -159,32 +159,20 @@ export class UserService {
   ): Promise<{
     status: 'success' | 'failed';
     messages: string;
-    info: {
-      name: string;
-      school: string;
-      profession: string;
-    } | null;
+    info: { name: string; school: string; profession: string } | null;
   }> {
     if (!id_number || !uuid) throw new Error('Missing params.');
 
     try {
       const user = await this.findUserByUuid(uuid);
       if (!user) {
-        return {
-          status: 'failed',
-          messages: '用户不存在',
-          info: null,
-        };
+        return { status: 'failed', messages: '用户不存在', info: null };
       }
 
       const apiResponse = await verifyIdNumber(id_number);
 
       if (apiResponse?.data?.outmap?.err === '身份证错误！') {
-        return {
-          status: 'failed',
-          messages: '身份证不合法',
-          info: null,
-        };
+        return { status: 'failed', messages: '身份证不合法', info: null };
       }
 
       if (apiResponse?.data?.outmap?.err !== 'success') {
@@ -344,9 +332,7 @@ export class UserService {
 
   // 返回用户设置模板
   async userSettingTemplate(uuid: string) {
-    const user = await this.userRepository.findOne({
-      where: { uuid: uuid },
-    });
+    const user = await this.userRepository.findOne({ where: { uuid: uuid } });
 
     const userMainProfessionSubject: number = user.profession_main_subject;
 

@@ -140,6 +140,48 @@ export class UserController {
   }
 
   @UseGuards(TokenGuard)
+  @Post('nick')
+  async changeNick(@Req() req: Request, @Body() body: any) {
+    const user: any = req.user;
+    const newNick = body.nick;
+
+    if (!newNick) {
+      return ApiResponseUtil.error(400, 'nick_required', '必须提供新昵称');
+    }
+
+    if (/^\d+$/.test(newNick)) {
+      return ApiResponseUtil.error(
+        400,
+        'nick_invalid',
+        '昵称不能是纯数字，请使用包含字母的组合',
+      );
+    }
+
+    const existingUser = await this.userService.findByNick(newNick);
+    if (existingUser && existingUser.uuid !== user.uuid) {
+      return ApiResponseUtil.error(
+        409,
+        'nick_exists',
+        '该昵称已被占用，请更换其他昵称',
+      );
+    }
+
+    try {
+      await this.userService.updateNick(user.uuid, newNick);
+      return ApiResponseUtil.success(200, {
+        message: '昵称修改成功',
+        nick: newNick,
+      });
+    } catch (error) {
+      return ApiResponseUtil.error(
+        500,
+        'internal_error',
+        `昵称更新失败: ${error.message}`,
+      );
+    }
+  }
+
+  @UseGuards(TokenGuard)
   @Get('progress')
   async getProgress(@Req() req: Request) {
     const userInfo: any = req.user;
