@@ -451,7 +451,7 @@ export class UserController {
       const userStatEntry = {
         uuid: user.uuid,
         name: idNumber ? (showUserStat ? modifiedName : null) : null,
-        nick: showUserStat ? user.nick : null,
+        nick: showUserStat ? (user.nick ? user.nick : null) : null,
         profession: idNumber ? user.profession : null,
         school: idNumber ? user.school : null,
         id_number: idNumber || null,
