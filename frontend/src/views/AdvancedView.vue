@@ -198,7 +198,7 @@ const syncIdNumber = async () => {
             isSyncLoading.value = false
             isSyncAccount.value = false
             status.value = ''
-        }, 5000)
+        }, 3000)
     }
 }
 </script>
@@ -252,8 +252,8 @@ const syncIdNumber = async () => {
                     船政转轨练习系统对应的身份证
                     <div class="page-advanced-basic__tags" v-if="!userStore.profile.id_number">
                         <div class="page-advanced-basic__tag add" @click="syncAccountStatus" v-if="!isSyncAccount">新增</div>
-                        <div class="page-advanced-basic__tag cancel" @click="syncAccountStatus" v-if="isSyncAccount">取消</div>
-                        <div class="page-advanced-basic__tag sync" @click="syncIdNumber" v-if="isSyncAccount">同步</div>
+                        <div class="page-advanced-basic__tag cancel" @click="syncAccountStatus" v-if="isSyncAccount && !isSyncLoading">取消</div>
+                        <div class="page-advanced-basic__tag sync" @click="syncIdNumber" v-if="isSyncAccount && !isSyncLoading">同步</div>
                         <div class="page-advanced-basic__tag status" v-if="isSyncAccount && isSyncLoading">{{ status }}</div>
                     </div>
                 </div>
