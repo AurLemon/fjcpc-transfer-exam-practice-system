@@ -619,7 +619,7 @@ onMounted(() => {
                     <div class="page-stat-userstat__item" :class="{ user: user.uuid === userStore.profile.uuid }">
                         <div class="page-stat-userstat__info">
                             <div class="page-stat-userstat__name" :class="{ hide: !user.name && !user.nick }">
-                                {{ user.name ? (user.name ?? '已隐藏') : (user.nick ?? '已隐藏') }}
+                                <div class="page-stat-userstat__show">{{ user.name ? (user.name ?? '已隐藏') : (user.nick ?? '已隐藏') }}</div>
                                 <div class="page-stat-userstat__lastlogin" v-tippy="{ content: `上次登录：${formatTimestamp(user.last_login)}` }">
                                     {{ formatTimeAgo(user.last_login) }}
                                 </div>
@@ -1099,6 +1099,13 @@ onMounted(() => {
 
                     &.hide {
                         color: var(--color-surface-3);
+                    }
+
+                    .page-stat-userstat__show {
+                        flex: 1;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
                     }
                 }
 
