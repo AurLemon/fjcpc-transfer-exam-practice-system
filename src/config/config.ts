@@ -25,9 +25,11 @@ export default () => {
     git_info: {
       local_commit: process.env.LOCAL_COMMIT_HASH || null,
       repo_commit: process.env.REPO_COMMIT_HASH || null,
-      recent_commit: process.env.RECENT_COMMIT || null,
       local_commit_time: process.env.LOCAL_COMMIT_TIME || null,
       repo_commit_time: process.env.REPO_COMMIT_TIME || null,
+      local_commit_message: process.env.LOCAL_COMMIT_MESSAGE || null,
+      repo_commit_message: process.env.REPO_COMMIT_MESSAGE || null,
+      recent_commit: process.env.RECENT_COMMIT || null,
     },
   };
 };

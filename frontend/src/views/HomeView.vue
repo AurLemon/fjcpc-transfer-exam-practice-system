@@ -31,10 +31,13 @@ const openLoginCard = () => {
             </div>
         </div>
         <div class="page-guide-git" v-if="questionStore.questionInfo.git_info.repo_commit_time && questionStore.questionInfo.git_info.repo_commit_time">
-            题库将于4月22日起每日自动获取更新，网站最近更新时间为
-            {{ dayjs(parseInt(questionStore.questionInfo.git_info.repo_commit_time) * 1000).format('YYYY-MM-DD HH:mm:ss') }}（{{
-                questionStore.questionInfo.git_info.repo_commit.slice(0, 8)
-            }}）。
+            题库将于4月22日起每日自动获取更新，去年的新题型以专业课的数据库为主。
+            <div class="message">
+                网站最近更新时间为
+                {{ dayjs(parseInt(questionStore.questionInfo.git_info.repo_commit_time) * 1000).format('YYYY-MM-DD HH:mm:ss') }} （{{
+                    questionStore.questionInfo.git_info.repo_commit.slice(0, 8)
+                }}，{{ questionStore.questionInfo.git_info.repo_commit_message }}）
+            </div>
         </div>
         <div class="page-guide-content">
             <div class="page-guide-content__subtitle">船政上什么课？实习什么时候？选修课有什么？其它三个学校怎么样？……</div>
@@ -225,8 +228,25 @@ const openLoginCard = () => {
     .page-guide-git {
         color: var(--color-base--subtle);
         font-size: 12px;
+        font-weight: 500;
         text-align: center;
         margin: 1rem 0;
+
+        @include screen.media-screen(phone) {
+            margin-top: 2rem;
+        }
+
+        .message {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            @include screen.media-screen(phone) {
+                white-space: unset;
+                overflow: unset;
+                text-overflow: unset;
+            }
+        }
     }
 
     .page-guide-content {

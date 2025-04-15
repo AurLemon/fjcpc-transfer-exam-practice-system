@@ -1,28 +1,32 @@
+// src/api/api.ts
+
 import { execSync } from 'child_process';
 import axios from 'axios';
 import config from './config';
 
-const getCurrentCommitHashAndTime = (): {
+const getCurrentCommitHashAndTimeAndMessage = (): {
   hash: string | null;
   time: number | null;
+  message: string | null;
 } => {
   try {
-    const output = execSync('git show -s --format="%H|%ct" HEAD')
+    const output = execSync('git show -s --format="%H|%ct|%s" HEAD')
       .toString()
       .trim();
-    const [hash, timestamp] = output.split('|');
+    const [hash, timestamp, message] = output.split('|');
     const localTimestamp = Number(timestamp);
     return {
       hash: hash.trim(),
       time: localTimestamp,
+      message: message ? message.trim() : null,
     };
   } catch (err) {
-    return { hash: null, time: null };
+    return { hash: null, time: null, message: null };
   }
 };
 
-const fetchLatestCommitHashList = async (): Promise<
-  { sha: string; timestamp: number }[] | null
+const fetchLatestCommitHashListWithMessages = async (): Promise<
+  { sha: string; timestamp: number; message: string }[] | null
 > => {
   try {
     const response = await axios.get(
@@ -31,10 +35,10 @@ const fetchLatestCommitHashList = async (): Promise<
     return response.data.map((commit: any) => {
       const commitDate = new Date(commit.commit.author.date);
       const utcSeconds = Math.floor(commitDate.getTime() / 1000);
-      const localTimestamp = utcSeconds;
       return {
         sha: commit.sha,
-        timestamp: localTimestamp,
+        timestamp: utcSeconds,
+        message: commit.commit.message.trim(),
       };
     });
   } catch (err) {
@@ -43,8 +47,11 @@ const fetchLatestCommitHashList = async (): Promise<
 };
 
 export const getCommitInfo = async () => {
-  const { hash: localCommitHash, time: localCommitTime } =
-    getCurrentCommitHashAndTime();
+  const {
+    hash: localCommitHash,
+    time: localCommitTime,
+    message: localCommitMessage,
+  } = getCurrentCommitHashAndTimeAndMessage();
   if (!localCommitHash) {
     return {
       local_commit: null,
@@ -52,10 +59,12 @@ export const getCommitInfo = async () => {
       recent_commit: 'local',
       local_commit_time: null,
       repo_commit_time: null,
+      local_commit_message: null,
+      repo_commit_message: null,
     };
   }
 
-  const repoCommitHashList = await fetchLatestCommitHashList();
+  const repoCommitHashList = await fetchLatestCommitHashListWithMessages();
   if (!repoCommitHashList) {
     return {
       local_commit: localCommitHash,
@@ -63,6 +72,8 @@ export const getCommitInfo = async () => {
       recent_commit: 'local',
       local_commit_time: localCommitTime,
       repo_commit_time: null,
+      local_commit_message: localCommitMessage,
+      repo_commit_message: null,
     };
   }
 
@@ -87,6 +98,8 @@ export const getCommitInfo = async () => {
     recent_commit: recentCommit,
     local_commit_time: localCommitTime,
     repo_commit_time: repoCommitTime,
+    local_commit_message: localCommitMessage || null,
+    repo_commit_message: latestRepoCommit.message || null,
   };
 };
 

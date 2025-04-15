@@ -2,21 +2,21 @@ $media-screen-value-phone: 768px;
 $media-screen-value-pad: 1080px;
 
 @mixin media-screen($device) {
-    @if $device =='phone' {
-        @media screen and (max-width: 768px) {
-            @content;
-        }
+  @if $device =='phone' {
+    @media screen and (max-width: $media-screen-value-phone) {
+      @content;
     }
+  }
 
-    @else if $device =='pad' {
-        @media screen and (min-width: 769px) and (max-width: 1080px) {
-            @content;
-        }
+  @else if $device =='pad' {
+    @media screen and (min-width: #{($media-screen-value-phone + 1)}) and (max-width: $media-screen-value-pad) {
+      @content;
     }
+  }
 
-    @else if $device =='mobile' {
-        @media screen and (max-width: 1080px) {
-            @content;
-        }
+  @else if $device =='mobile' {
+    @media screen and (max-width: $media-screen-value-pad) {
+      @content;
     }
+  }
 }

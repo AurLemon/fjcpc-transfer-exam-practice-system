@@ -25,8 +25,10 @@ export interface QuestionInfo {
     git_info: {
         local_commit: string
         local_commit_time: string
+        local_commit_message: string
         repo_commit: string
         repo_commit_time: string
+        repo_commit_message: string
         recent_commit: string
     }
 }
@@ -43,8 +45,10 @@ export const useQuestionStore = defineStore('question', {
             git_info: {
                 local_commit: '',
                 local_commit_time: '',
+                local_commit_message: '',
                 repo_commit: '',
                 repo_commit_time: '',
+                repo_commit_message: '',
                 recent_commit: ''
             }
         } as QuestionInfo,

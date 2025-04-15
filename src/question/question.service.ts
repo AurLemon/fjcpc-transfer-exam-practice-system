@@ -338,6 +338,8 @@ export class QuestionService {
         repo_commit: config().git_info.repo_commit,
         local_commit_time: config().git_info.local_commit_time,
         repo_commit_time: config().git_info.repo_commit_time,
+        local_commit_message: config().git_info.local_commit_message,
+        repo_commit_message: config().git_info.repo_commit_message,
         recent_commit: config().git_info.recent_commit,
       },
     };
