@@ -408,7 +408,7 @@ const saveNick = async () => {
             </div>
             <div class="status" v-else-if="questionStore.questionInfo.git_info.recent_commit === 'repo'">
                 <span class="material-icons">warning</span>
-                当前项目已滞后，需要部署项目的人员更新项目。
+                当前项目已滞后，需要站长更新项目。
             </div>
             <div class="status" v-else>
                 <span class="material-icons">refresh</span>
@@ -418,11 +418,16 @@ const saveNick = async () => {
                 项目仓库最新提交记录为
                 <span class="commit">
                     <a :href="`https://github.com/AurLemon/fjcpc-transfer-exam-practice-system/commit/${questionStore.questionInfo.git_info.repo_commit}`">
-                        {{ questionStore.questionInfo.git_info.repo_commit }}
+                        {{ questionStore.questionInfo.git_info.repo_commit }}（{{
+                            dayjs(parseInt(questionStore.questionInfo.git_info.repo_commit_time) * 1000).format('YYYY-MM-DD HH:mm:ss')
+                        }}）
                     </a>
                 </span>
-                ，当前运行项目的提交记录为
-                <span class="commit">{{ questionStore.questionInfo.git_info.current_commit }}</span
+                ，当前站点项目的提交记录为
+                <span class="commit"
+                    >{{ questionStore.questionInfo.git_info.local_commit }}（{{
+                        dayjs(parseInt(questionStore.questionInfo.git_info.local_commit_time) * 1000).format('YYYY-MM-DD HH:mm:ss')
+                    }}）</span
                 >。
             </div>
         </div>

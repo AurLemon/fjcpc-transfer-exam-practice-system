@@ -1,33 +1,58 @@
-// /src/api/api.ts
-
 import { execSync } from 'child_process';
 import axios from 'axios';
-
 import config from './config';
 
-const getCurrentCommitHash = (): string | null => {
+const getCurrentCommitHashAndTime = (): {
+  hash: string | null;
+  time: number | null;
+} => {
   try {
-    return execSync('git rev-parse HEAD').toString().trim();
+    const output = execSync('git show -s --format="%H|%ct" HEAD')
+      .toString()
+      .trim();
+    const [hash, timestamp] = output.split('|');
+    const localTimestamp = Number(timestamp);
+    return {
+      hash: hash.trim(),
+      time: localTimestamp,
+    };
   } catch (err) {
-    return null;
+    return { hash: null, time: null };
   }
 };
 
-const fetchLatestCommitHashList = async (): Promise<string[] | null> => {
+const fetchLatestCommitHashList = async (): Promise<
+  { sha: string; timestamp: number }[] | null
+> => {
   try {
     const response = await axios.get(
       'https://api.github.com/repos/AurLemon/fjcpc-transfer-exam-practice-system/commits',
     );
-    return response.data.map((commit: { sha: string }) => commit.sha);
+    return response.data.map((commit: any) => {
+      const commitDate = new Date(commit.commit.author.date);
+      const utcSeconds = Math.floor(commitDate.getTime() / 1000);
+      const localTimestamp = utcSeconds;
+      return {
+        sha: commit.sha,
+        timestamp: localTimestamp,
+      };
+    });
   } catch (err) {
     return null;
   }
 };
 
 export const getCommitInfo = async () => {
-  const localCommitHash = getCurrentCommitHash();
+  const { hash: localCommitHash, time: localCommitTime } =
+    getCurrentCommitHashAndTime();
   if (!localCommitHash) {
-    return { local_commit: null, repo_commit: null, recent_commit: 'local' };
+    return {
+      local_commit: null,
+      repo_commit: null,
+      recent_commit: 'local',
+      local_commit_time: null,
+      repo_commit_time: null,
+    };
   }
 
   const repoCommitHashList = await fetchLatestCommitHashList();
@@ -36,15 +61,21 @@ export const getCommitInfo = async () => {
       local_commit: localCommitHash,
       repo_commit: null,
       recent_commit: 'local',
+      local_commit_time: localCommitTime,
+      repo_commit_time: null,
     };
   }
 
   const latestRepoCommit = repoCommitHashList[0];
-  let recentCommit;
+  const repoCommitTime = latestRepoCommit.timestamp;
 
-  if (latestRepoCommit === localCommitHash) {
+  let recentCommit: 'both' | 'repo' | 'local' = 'local';
+
+  if (latestRepoCommit.sha === localCommitHash) {
     recentCommit = 'both';
-  } else if (repoCommitHashList.includes(localCommitHash)) {
+  } else if (
+    repoCommitHashList.some((commit) => commit.sha === localCommitHash)
+  ) {
     recentCommit = 'repo';
   } else {
     recentCommit = 'local';
@@ -52,8 +83,10 @@ export const getCommitInfo = async () => {
 
   return {
     local_commit: localCommitHash,
-    repo_commit: latestRepoCommit,
+    repo_commit: latestRepoCommit.sha,
     recent_commit: recentCommit,
+    local_commit_time: localCommitTime,
+    repo_commit_time: repoCommitTime,
   };
 };
 

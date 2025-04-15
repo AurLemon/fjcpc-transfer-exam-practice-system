@@ -334,8 +334,10 @@ export class QuestionService {
         exam_trust: examTrust,
       },
       git_info: {
-        current_commit: config().git_info.current_commit,
+        local_commit: config().git_info.local_commit,
         repo_commit: config().git_info.repo_commit,
+        local_commit_time: config().git_info.local_commit_time,
+        repo_commit_time: config().git_info.repo_commit_time,
         recent_commit: config().git_info.recent_commit,
       },
     };

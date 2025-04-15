@@ -23,9 +23,11 @@ export default () => {
       exam_trust: Boolean(process.env.EXAM_TRUST) || false,
     },
     git_info: {
-      current_commit: process.env.CURRENT_COMMIT_HASH || null,
+      local_commit: process.env.LOCAL_COMMIT_HASH || null,
       repo_commit: process.env.REPO_COMMIT_HASH || null,
       recent_commit: process.env.RECENT_COMMIT || null,
+      local_commit_time: process.env.LOCAL_COMMIT_TIME || null,
+      repo_commit_time: process.env.REPO_COMMIT_TIME || null,
     },
   };
 };

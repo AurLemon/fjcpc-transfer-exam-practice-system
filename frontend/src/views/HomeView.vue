@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 import { RouterLink } from 'vue-router'
+import dayjs from 'dayjs'
 
 import { useCardStore } from '@/stores/card'
-import { useNotifyStore } from '@/stores/notify'
+import { useQuestionStore } from '@/stores/question'
 
 const cardStore = useCardStore()
-const notifyStore = useNotifyStore()
+const questionStore = useQuestionStore()
 
 const openLoginCard = () => {
     cardStore.showLoginCard = true
@@ -28,6 +29,12 @@ const openLoginCard = () => {
             <div class="page-guide-poster">
                 <img src="@/assets/images/favicon.png" v-tippy="{ content: '致敬传奇主唱井芹仁菜' }" />
             </div>
+        </div>
+        <div class="page-guide-git" v-if="questionStore.questionInfo.git_info.repo_commit_time && questionStore.questionInfo.git_info.repo_commit_time">
+            题库将于4月22日起每日自动获取更新，网站最近更新时间为
+            {{ dayjs(parseInt(questionStore.questionInfo.git_info.repo_commit_time) * 1000).format('YYYY-MM-DD HH:mm:ss') }}（{{
+                questionStore.questionInfo.git_info.repo_commit.slice(0, 8)
+            }}）。
         </div>
         <div class="page-guide-content">
             <div class="page-guide-content__subtitle">船政上什么课？实习什么时候？选修课有什么？其它三个学校怎么样？……</div>
@@ -213,6 +220,13 @@ const openLoginCard = () => {
                 transition-duration: 150ms;
             }
         }
+    }
+
+    .page-guide-git {
+        color: var(--color-base--subtle);
+        font-size: 12px;
+        text-align: center;
+        margin: 1rem 0;
     }
 
     .page-guide-content {

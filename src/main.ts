@@ -11,9 +11,17 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.use(express.static(join(__dirname, '..', 'public')));
 
-  const { local_commit, repo_commit, recent_commit } = await getCommitInfo();
+  const {
+    local_commit,
+    repo_commit,
+    recent_commit,
+    local_commit_time,
+    repo_commit_time,
+  } = await getCommitInfo();
+  process.env.LOCAL_COMMIT_HASH = local_commit;
   process.env.REPO_COMMIT_HASH = repo_commit;
-  process.env.CURRENT_COMMIT_HASH = local_commit;
+  process.env.LOCAL_COMMIT_TIME = local_commit_time.toString();
+  process.env.REPO_COMMIT_TIME = repo_commit_time.toString();
   process.env.RECENT_COMMIT = recent_commit;
 
   app.use((req, res, next) => {

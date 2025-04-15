@@ -38,7 +38,7 @@ export default defineComponent({
                 </div>
                 <div
                     class="page-menu-commit"
-                    v-if="questionStore.questionInfo.git_info.current_commit !== ''"
+                    v-if="questionStore.questionInfo.git_info.local_commit !== ''"
                     v-tippy="{
                         content:
                             questionStore.questionInfo.git_info.recent_commit === 'both'
@@ -46,7 +46,7 @@ export default defineComponent({
                                 : '当前项目已滞后，需要部署项目的人员更新项目'
                     }"
                 >
-                    {{ questionStore.questionInfo.git_info.current_commit.slice(0, 8) }}
+                    {{ questionStore.questionInfo.git_info.local_commit.slice(0, 8) }}
                     <div
                         class="page-menu-commit__status"
                         :class="{
@@ -146,9 +146,11 @@ export default defineComponent({
                 height: 6px;
                 border-radius: 50%;
                 background: var(--success-color);
+                box-shadow: 0 0 32px 1px var(--success-color);
 
                 &.inc {
                     background: var(--failed-color);
+                    box-shadow: 0 0 32px 1px var(--failed-color);
                 }
             }
         }

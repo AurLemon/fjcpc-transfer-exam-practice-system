@@ -23,8 +23,10 @@ export interface QuestionInfo {
         exam_trust: boolean
     }
     git_info: {
-        current_commit: string
+        local_commit: string
+        local_commit_time: string
         repo_commit: string
+        repo_commit_time: string
         recent_commit: string
     }
 }
@@ -39,8 +41,10 @@ export const useQuestionStore = defineStore('question', {
                 exam_trust: false
             },
             git_info: {
-                current_commit: '',
+                local_commit: '',
+                local_commit_time: '',
                 repo_commit: '',
+                repo_commit_time: '',
                 recent_commit: ''
             }
         } as QuestionInfo,
