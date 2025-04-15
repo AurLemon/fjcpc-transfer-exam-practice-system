@@ -435,22 +435,21 @@ export class UserController {
 
     const qb = this.userRepository.createQueryBuilder('user');
     qb.leftJoin('user_settings', 'userSetting', 'user.uuid = userSetting.user');
-    qb.addSelect('userSetting.setting', 'userSetting_setting');
 
-    qb.addSelect(
-      `(SELECT COUNT(*) FROM done_questions dq WHERE dq.user = user.uuid)`,
-      'doneQuestionsCount',
+    qb.leftJoin(
+      `(SELECT user, COUNT(*) AS doneCount FROM done_questions GROUP BY user)`,
+      'dq',
+      'dq.user = user.uuid',
+    );
+
+    qb.leftJoin(
+      `(SELECT user, COUNT(*) AS wrongCount FROM star_questions WHERE folder = 'wrong' GROUP BY user)`,
+      'sq',
+      'sq.user = user.uuid',
     );
 
     qb.addSelect(
-      `(SELECT COUNT(*) FROM star_questions sq WHERE sq.user = user.uuid AND sq.folder = 'wrong')`,
-      'starQuestionsCount',
-    );
-
-    qb.addSelect(
-      `(SELECT COUNT(*) FROM questions q 
-        WHERE q.course = 2 AND q.subject = user.profession_main_subject) 
-       + :course1Count`,
+      `(SELECT COUNT(*) FROM questions q WHERE q.course = 2 AND q.subject = user.profession_main_subject) + :course1Count`,
       'totalQuestionsCount',
     ).setParameter('course1Count', course1Count);
 
@@ -462,7 +461,13 @@ export class UserController {
       .addSelect('user.school', 'school')
       .addSelect('user.profession_main_subject', 'mainProfessionSubject')
       .addSelect('user.last_login', 'last_login')
-      .addSelect('user.reg_date', 'reg_date');
+      .addSelect('user.reg_date', 'reg_date')
+      .addSelect('userSetting.setting', 'userSetting_setting')
+      .addSelect('dq.doneCount', 'doneQuestionsCount')
+      .addSelect('sq.wrongCount', 'starQuestionsCount');
+
+    qb.groupBy('user.uuid');
+    qb.orderBy('user.reg_date', 'ASC');
 
     const usersWithStats = await qb.getRawMany();
 
@@ -521,7 +526,6 @@ export class UserController {
         nick: showUserStat ? (nick ? nick : null) : null,
         profession: idNumber ? profession : null,
         school: idNumber ? school : null,
-        id_number: idNumber || null,
         main_profession_subject: mainProfessionSubject,
         last_login: new Date(last_login).getTime(),
         reg_date: new Date(reg_date).getTime(),
@@ -534,8 +538,6 @@ export class UserController {
 
       userStats.push(userStatEntry);
     }
-
-    userStats.sort((a, b) => a.reg_date - b.reg_date);
 
     const userCount = await this.userRepository.count();
     const professionSubjects = await this.requestInfoRepository
