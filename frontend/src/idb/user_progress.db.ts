@@ -3,7 +3,7 @@
 import { openDB } from 'idb'
 import { initDB } from './idb'
 
-interface ProgressData {
+export interface ProgressData {
     pid: string
     course: number
     subject: number

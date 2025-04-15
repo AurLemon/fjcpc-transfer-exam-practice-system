@@ -10,7 +10,7 @@ import { useAuthStore } from './auth'
 import { useQuestionStore } from './question'
 import { useNotifyStore } from './notify'
 
-interface StarItem {
+export interface StarItem {
     pid: string
     course: number
     subject: number
@@ -18,7 +18,7 @@ interface StarItem {
     type: number
 }
 
-interface ProgressData {
+export interface ProgressData {
     pid: string
     course: number
     subject: number
@@ -26,12 +26,12 @@ interface ProgressData {
     type: number
 }
 
-interface StarProgressData {
+export interface StarProgressData {
     folderName: string
     items: StarItem[]
 }
 
-interface UserSettings {
+export interface UserSettings {
     user_main_profession_subject: number
     auto_sync_data: boolean
     auto_save_progress: boolean

@@ -4,7 +4,7 @@ import { defineStore } from 'pinia'
 import { get } from '@/api/api'
 import { useNotifyStore } from '@/stores/notify'
 
-interface Lesson {
+export interface Lesson {
     subject: number
     id: string
     name: string

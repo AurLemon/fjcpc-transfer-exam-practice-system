@@ -8,22 +8,6 @@ import { useUserStore } from '@/stores/user'
 import { useQuestionStore } from '@/stores/question'
 import { useNotifyStore } from '@/stores/notify'
 
-export interface StarItem {
-    pid: string
-    course: number
-    subject: number
-    time: string
-    type: number
-}
-
-export interface ProgressData {
-    pid: string
-    course: number
-    subject: number
-    time: string
-    type: number
-}
-
 export default defineComponent({
     name: 'ContainerPanel',
     data() {

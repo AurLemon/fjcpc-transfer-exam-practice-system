@@ -1,7 +1,7 @@
 import { openDB } from 'idb'
 import { initDB } from './idb'
 
-interface StarItem {
+export interface StarItem {
     pid: string
     course: number
     subject: number
@@ -9,7 +9,7 @@ interface StarItem {
     type: number
 }
 
-interface StarProgressData {
+export interface StarProgressData {
     folderName: string
     items: StarItem[]
 }
