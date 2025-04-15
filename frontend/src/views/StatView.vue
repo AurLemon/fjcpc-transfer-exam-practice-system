@@ -629,7 +629,7 @@ onMounted(() => {
                                     {{ ((user.user_progress.current / user.user_progress.total) * 100).toFixed(2) }}%
                                 </div>
                                 <div class="page-stat-userstat__wrongcount page-stat-userstat__tag" v-tippy="{ content: '错误率' }">
-                                    {{ ((user.wrong_count / user.user_progress.current) * 100).toFixed(2) }}%
+                                    {{ user.user_progress.current === 0 ? '0.00' : ((user.wrong_count / user.user_progress.current) * 100).toFixed(2) }}%
                                 </div>
                                 <div
                                     class="page-stat-userstat__mainsubject page-stat-userstat__tag"
@@ -653,7 +653,10 @@ onMounted(() => {
                                 >
                                     <div
                                         class="page-stat-userstat__wrong"
-                                        :style="{ width: ((user.wrong_count / user.user_progress.total) * 100).toFixed(2) + '%' }"
+                                        :style="{
+                                            width:
+                                                user.user_progress.total === 0 ? '0%' : ((user.wrong_count / user.user_progress.total) * 100).toFixed(2) + '%'
+                                        }"
                                     ></div>
                                 </div>
                             </div>
@@ -1075,7 +1078,8 @@ onMounted(() => {
                 overflow: hidden;
 
                 &.user {
-                    background: radial-gradient(ellipse at 5% 0%, rgba(191, 57, 137, 0.04) 0, transparent 75%),
+                    background:
+                        radial-gradient(ellipse at 5% 0%, rgba(191, 57, 137, 0.04) 0, transparent 75%),
                         radial-gradient(ellipse at 60% 0%, rgba(9, 107, 222, 0.04) 0, transparent 75%);
                 }
 
