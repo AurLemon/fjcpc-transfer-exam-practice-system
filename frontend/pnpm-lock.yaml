@@ -20,6 +20,9 @@ importers:
       '@types/qs':
         specifier: ^6.9.16
         version: 6.9.18
+      '@types/sass':
+        specifier: ^1.45.0
+        version: 1.45.0
       axios:
         specifier: ^1.7.7
         version: 1.8.4
@@ -59,6 +62,9 @@ importers:
       sm-crypto-v2:
         specifier: ^1.9.2
         version: 1.9.3
+      tippy.js:
+        specifier: ^6.3.7
+        version: 6.3.7
       vue:
         specifier: ^3.5.0
         version: 3.5.13(typescript@5.4.5)
@@ -757,6 +763,10 @@ packages:
 
   '@types/qs@6.9.18':
     resolution: {integrity: sha512-kK7dgTYDyGqS+e2Q4aK9X3D7q234CIZ1Bv0q/7Z5IwRDoADNU81xXJK/YVyLbLTZCoIwUoDoffFeF+p/eIklAA==}
+
+  '@types/sass@1.45.0':
+    resolution: {integrity: sha512-jn7qwGFmJHwUSphV8zZneO3GmtlgLsmhs/LQyVvQbIIa+fzGMUiHI4HXJZL3FT8MJmgXWbLGiVVY7ElvHq6vDA==}
+    deprecated: This is a stub types definition. sass provides its own type definitions, so you do not need this installed.
 
   '@types/sm-crypto@0.3.4':
     resolution: {integrity: sha512-tp+KWAawUkwUWSpA3sHymerfy9P0utSyfdh7D60FJ4Aj1rhBZ2Q/nDvARUmmfQeIZZD1FKg9oAcDqecCux0npw==}
@@ -3087,6 +3097,10 @@ snapshots:
       undici-types: 6.19.8
 
   '@types/qs@6.9.18': {}
+
+  '@types/sass@1.45.0':
+    dependencies:
+      sass: 1.86.3
 
   '@types/sm-crypto@0.3.4':
     dependencies:
