@@ -18,6 +18,7 @@ import { DoneQuestion } from '../database/entities/done_question.entity';
 import { StarQuestion } from '../database/entities/star_question.entity';
 import { Question } from '../database/entities/question.entity';
 import { RequestInfo } from '../database/entities/request_info.entity';
+import { log } from 'console';
 
 @Controller('user')
 export class UserController {
@@ -428,37 +429,79 @@ export class UserController {
 
   @Get('stat')
   async getStat() {
-    const users = await this.userRepository.find();
-    const userStats = [];
+    const course1Count = await this.questionRepository.count({
+      where: { course: 1 },
+    });
 
-    for (const user of users) {
-      const userUuid = user.uuid;
-      const idNumber = user.id_number;
+    const qb = this.userRepository.createQueryBuilder('user');
+    qb.leftJoin('user_settings', 'userSetting', 'user.uuid = userSetting.user');
+    qb.addSelect('userSetting.setting', 'userSetting_setting');
 
-      let decryptedName = null;
+    qb.addSelect(
+      `(SELECT COUNT(*) FROM done_questions dq WHERE dq.user = user.uuid)`,
+      'doneQuestionsCount',
+    );
+
+    qb.addSelect(
+      `(SELECT COUNT(*) FROM star_questions sq WHERE sq.user = user.uuid AND sq.folder = 'wrong')`,
+      'starQuestionsCount',
+    );
+
+    qb.addSelect(
+      `(SELECT COUNT(*) FROM questions q 
+        WHERE q.course = 2 AND q.subject = user.profession_main_subject) 
+       + :course1Count`,
+      'totalQuestionsCount',
+    ).setParameter('course1Count', course1Count);
+
+    qb.addSelect('user.uuid', 'uuid')
+      .addSelect('user.id_number', 'idNumber')
+      .addSelect('user.name', 'name')
+      .addSelect('user.nick', 'nick')
+      .addSelect('user.profession', 'profession')
+      .addSelect('user.school', 'school')
+      .addSelect('user.profession_main_subject', 'mainProfessionSubject')
+      .addSelect('user.last_login', 'last_login')
+      .addSelect('user.reg_date', 'reg_date');
+
+    const usersWithStats = await qb.getRawMany();
+
+    const userStats: any[] = [];
+    for (const user of usersWithStats) {
+      const {
+        uuid,
+        idNumber,
+        name: encryptedName,
+        nick,
+        profession,
+        school,
+        mainProfessionSubject,
+        last_login,
+        reg_date,
+        doneQuestionsCount,
+        totalQuestionsCount,
+        starQuestionsCount,
+      } = user;
+
       let modifiedName = null;
+      const userSetting = user.userSetting_setting
+        ? JSON.parse(user.userSetting_setting)
+        : {};
 
-      const userSetting = await this.userSettingRepository.findOne({
-        where: { user: userUuid },
-      });
-      const showUserStat = userSetting?.setting?.show_user_stat !== false;
+      const showUserStat = userSetting?.show_user_stat ?? true;
 
       if (idNumber && showUserStat) {
         try {
-          const cacheKey = `user:${userUuid}:decryptedName`;
-          const cachedDecryptedName =
-            await this.redisCacheService.get(cacheKey);
+          const cacheKey = `user:${uuid}:decryptedName`;
+          let decryptedName = await this.redisCacheService.get(cacheKey);
 
-          if (cachedDecryptedName) {
-            decryptedName = cachedDecryptedName;
-          } else {
-            const [encryptedName, nameKey] = user.name.split('$');
-            decryptedName = this.cryptoUtil.aesDecrypt(encryptedName, nameKey);
-
+          if (!decryptedName) {
+            const [encryptedPart, key] = encryptedName.split('$');
+            decryptedName = this.cryptoUtil.aesDecrypt(encryptedPart, key);
             await this.redisCacheService.set(
               cacheKey,
               decryptedName,
-              60 * 60 * 24,
+              60 * 60 * 24 * 14,
             );
           }
 
@@ -467,44 +510,26 @@ export class UserController {
               ? decryptedName[0] + '*'.repeat(decryptedName.length - 1)
               : decryptedName;
         } catch (error) {
-          decryptedName = null;
           modifiedName = null;
+          console.error('Failed to decrypt name:', error);
         }
       }
 
-      const doneQuestionsCount = await this.doneQuestionRepository.count({
-        where: { user: userUuid },
-      });
-
-      const mainProfessionSubject = user.profession_main_subject;
-      const totalCourse2SubjectCount = await this.questionRepository.count({
-        where: { course: 2, subject: mainProfessionSubject },
-      });
-      const totalCourse1Count = await this.questionRepository.count({
-        where: { course: 1 },
-      });
-
-      const totalQuestionsCount = totalCourse2SubjectCount + totalCourse1Count;
-
-      const starQuestionsCount = await this.starQuestionRepository.count({
-        where: { user: userUuid, folder: 'wrong' },
-      });
-
       const userStatEntry = {
-        uuid: user.uuid,
+        uuid,
         name: idNumber ? (showUserStat ? modifiedName : null) : null,
-        nick: showUserStat ? (user.nick ? user.nick : null) : null,
-        profession: idNumber ? user.profession : null,
-        school: idNumber ? user.school : null,
+        nick: showUserStat ? (nick ? nick : null) : null,
+        profession: idNumber ? profession : null,
+        school: idNumber ? school : null,
         id_number: idNumber || null,
         main_profession_subject: mainProfessionSubject,
-        last_login: new Date(user.last_login).getTime(),
-        reg_date: new Date(user.reg_date).getTime(),
+        last_login: new Date(last_login).getTime(),
+        reg_date: new Date(reg_date).getTime(),
         user_progress: {
-          current: doneQuestionsCount,
-          total: totalQuestionsCount,
+          current: parseInt(doneQuestionsCount),
+          total: parseInt(totalQuestionsCount),
         },
-        wrong_count: starQuestionsCount,
+        wrong_count: parseInt(starQuestionsCount),
       };
 
       userStats.push(userStatEntry);
@@ -519,6 +544,7 @@ export class UserController {
       .where('course = :course', { course: 2 })
       .distinct(true)
       .getRawMany();
+
     const professionCount = professionSubjects.length;
 
     return ApiResponseUtil.success(200, {
