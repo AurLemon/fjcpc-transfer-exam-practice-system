@@ -529,10 +529,10 @@ export class UserController {
         last_login: new Date(last_login).getTime(),
         reg_date: new Date(reg_date).getTime(),
         user_progress: {
-          current: parseInt(doneQuestionsCount),
-          total: parseInt(totalQuestionsCount),
+          current: parseInt(doneQuestionsCount) ?? 0,
+          total: parseInt(totalQuestionsCount) ?? 0,
         },
-        wrong_count: parseInt(starQuestionsCount),
+        wrong_count: parseInt(starQuestionsCount) ?? 0,
       };
 
       userStats.push(userStatEntry);
