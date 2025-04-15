@@ -18,7 +18,6 @@ import { DoneQuestion } from '../database/entities/done_question.entity';
 import { StarQuestion } from '../database/entities/star_question.entity';
 import { Question } from '../database/entities/question.entity';
 import { RequestInfo } from '../database/entities/request_info.entity';
-import { log } from 'console';
 
 @Controller('user')
 export class UserController {
