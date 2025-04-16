@@ -501,8 +501,9 @@ export class UserController {
         : {};
 
       const showUserStat = userSetting?.show_user_stat ?? true;
+      const showName = userSetting?.show_name ?? 'id_number';
 
-      if (idNumber && showUserStat) {
+      if (idNumber && showUserStat && showName === 'id_number') {
         try {
           const cacheKey = `user:${uuid}:decryptedName`;
           let decryptedName = await this.redisCacheService.get(cacheKey);
@@ -529,7 +530,11 @@ export class UserController {
 
       const userStatEntry = {
         uuid,
-        name: idNumber ? (showUserStat ? modifiedName : null) : null,
+        name: idNumber
+          ? showUserStat && showName === 'id_number'
+            ? modifiedName
+            : null
+          : null,
         nick: showUserStat ? (nick ? nick : null) : null,
         profession: idNumber ? profession : null,
         school: idNumber ? school : null,

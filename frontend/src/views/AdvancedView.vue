@@ -21,7 +21,8 @@ const userSettingMap: Record<number, string> = {
     1: 'auto_sync_data', // 自动同步数据
     2: 'auto_save_progress', // 自动更新进度
     3: 'auto_star_question', // 自动保存错题
-    4: 'show_user_stat' // 允许向其他人展示做题进度
+    4: 'show_user_stat', // 允许向其他人展示做题进度
+    5: 'show_name' // 对外展示的姓名 'id_number' 或 'nick'
 }
 
 const changeMainSubject = async (mainSubject: number): Promise<void> => {
@@ -332,6 +333,13 @@ const saveNick = async () => {
                 </div>
                 <div class="page-advanced-basic__title">公开用户数据</div>
                 <div class="page-advanced-basic__desc">如果勾选，你的数据会在统计页面被其它用户看到👁👁。</div>
+            </div>
+            <div class="page-advanced-basic__setting" v-if="userStore.login.isLogged && !userStore.login.refreshing && userStore.setting.show_user_stat">
+                <div class="page-advanced-basic__button material-icons" @click="changeSetting(5, userStore.setting.show_name === 'id_number' ? 'nick' : 'id_number')">
+                    {{ userStore.setting.show_name === 'id_number' ? 'remove_red_eye' : 'interests' }}
+                </div>
+                <div class="page-advanced-basic__title">当前对外展示的为：{{ userStore.setting.show_name === 'id_number' ? '真实数据' : '昵称' }}</div>
+                <div class="page-advanced-basic__desc">点击后切换对外展示的名称，可以自由切换为真实数据或昵称。</div>
             </div>
             <div class="page-advanced-basic__setting">
                 <div class="page-advanced-basic__button material-icons" @click="changeSetting(1, !userStore.setting.auto_sync_data)">

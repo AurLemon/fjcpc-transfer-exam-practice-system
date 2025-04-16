@@ -144,7 +144,7 @@ export default defineComponent({
         </div>
         <div class="container-panel-profile">
             <div class="container-panel-profile-wrapper container-panel-profile-info" :class="{ blur: !userStore.login.isLogged || authStore.isLoading }">
-                <div class="container-panel-profile__greeting" v-if="userStore.profile.name">
+                <div class="container-panel-profile__greeting" v-if="userStore.profile.name && userStore.setting.show_name === 'id_number'">
                     {{ userStore.login.isLogged && userStore.profile.name.length > 0 ? `${userStore.profile.name[0]}同学，你好。` : '-' }}
                 </div>
                 <div class="container-panel-profile__greeting" v-else>
@@ -152,7 +152,7 @@ export default defineComponent({
                 </div>
                 <div class="container-panel-profile__inner">
                     <div class="container-panel-profile__account" v-if="userStore.profile.id_number">
-                        {{ userStore.login.isLogged && userStore.profile.id_number.length > 0 ? userStore.profile.id_number : '-' }}
+                        {{ userStore.login.isLogged && userStore.profile.id_number.length > 0 ? (userStore.setting.show_name === 'id_number' ? userStore.profile.id_number : `${userStore.profile.id_number[0]}*****************`) : '-' }}
                     </div>
                     <div class="container-panel-profile__account" v-else>
                         {{ userStore.login.isLogged && userStore.profile.uuid.length > 0 ? userStore.profile.uuid : '-' }}

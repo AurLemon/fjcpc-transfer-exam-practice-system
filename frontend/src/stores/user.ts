@@ -37,7 +37,8 @@ export interface UserSettings {
     auto_save_progress: boolean
     auto_star_question: boolean
     show_user_stat: boolean
-    [key: string]: number | boolean
+    show_name: 'id_number' | 'name'
+    [key: string]: number | boolean | string
 }
 
 export const useUserStore = defineStore('user', {
@@ -68,7 +69,8 @@ export const useUserStore = defineStore('user', {
             auto_sync_data: true,
             auto_save_progress: true,
             auto_star_question: true,
-            show_user_stat: true
+            show_user_stat: true,
+            show_name: 'id_number'
         } as UserSettings
     }),
     actions: {

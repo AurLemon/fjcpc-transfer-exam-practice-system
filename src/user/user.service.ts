@@ -331,7 +331,14 @@ export class UserService {
   }
 
   // 返回用户设置模板
-  async userSettingTemplate(uuid: string) {
+  async userSettingTemplate(uuid: string): Promise<{
+    user_main_profession_subject: number;
+    auto_sync_data: boolean;
+    auto_save_progress: boolean;
+    auto_star_question: boolean;
+    show_user_stat: boolean;
+    show_name: 'id_number' | 'nick';
+  }> {
     const user = await this.userRepository.findOne({ where: { uuid: uuid } });
 
     const userMainProfessionSubject: number = user.profession_main_subject;
@@ -342,6 +349,7 @@ export class UserService {
       auto_save_progress: true, // 自动更新进度
       auto_star_question: true, // 自动保存错题
       show_user_stat: true, // 允许向其他人展示做题进度
+      show_name: 'id_number', // 对外展示的用户名称，可以为 'id_number' 或 'nick'
     };
   }
 }
