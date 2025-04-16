@@ -115,11 +115,15 @@ export const useAuthStore = defineStore('auth', {
                     if (response.data.data.type === 'expiry_token') {
                         await this.refreshTokenAndRetry()
                     } else if (response.data.data.type === 'token_not_exist') {
-                        userStore.login.isLogged = false
-                        notifyStore.addMessage('failed', '登录状态失效，请重新登录。')
-                        this.deleteToken()
-                        this.deleteRefreshToken()
-                        this.isLoading = false
+                        try {
+                            await this.refreshTokenAndRetry()
+                        } catch (err) {
+                            userStore.login.isLogged = false
+                            notifyStore.addMessage('failed', '登录状态失效，请重新登录。')
+                            this.deleteToken()
+                            this.deleteRefreshToken()
+                            this.isLoading = false
+                        }
                     } else {
                         notifyStore.addMessage('failed', '无法获取档案信息，请检查网络连接。')
                         this.isLoading = false
@@ -160,6 +164,7 @@ export const useAuthStore = defineStore('auth', {
                     this.deleteToken()
                     this.deleteRefreshToken()
                     notifyStore.addMessage('failed', '刷新 token 失败，请重新登录。')
+                    throw new Error('failed to refresh token')
                 }
             } catch (err) {
                 notifyStore.addMessage('failed', '无法刷新 token，请重新登录。')

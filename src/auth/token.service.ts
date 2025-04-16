@@ -23,10 +23,24 @@ export class TokenService {
     private readonly cryptoUtil: CryptoUtil,
   ) {}
 
+  // 生成新的 access_token 和 refresh_token
   async generateTokens(userUuid: string): Promise<{
     access_token: string;
     refresh_token: string;
   }> {
+    const MAX_TOKEN = 5;
+    const existingTokens = await this.tokenRepository.find({
+      where: { user: userUuid },
+    });
+
+    if (existingTokens.length >= MAX_TOKEN) {
+      const oldestToken = existingTokens.sort(
+        (a, b) => a.access_token_expiry - b.access_token_expiry,
+      )[0];
+
+      await this.tokenRepository.remove(oldestToken);
+    }
+
     const access_token_expiry = Date.now() + 60 * 60 * 1000; // 1小时
     const refresh_token_expiry = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7天
 
@@ -38,12 +52,11 @@ export class TokenService {
       throw new Error('用户不存在，无法生成 Token');
     }
 
-    // 生成 access_token 时附加用户权限信息
     const access_token = jwt.sign(
       {
         exp: access_token_expiry,
-        permission: user.permission, // 添加用户权限
-        uuid: userUuid, // 可用于后续用户身份验证
+        permission: user.permission,
+        uuid: userUuid,
       },
       'secret',
       { algorithm: 'HS256' },
@@ -51,14 +64,14 @@ export class TokenService {
 
     const refresh_token = uuidv4();
 
-    const token = new Token();
-    token.uuid = userUuid;
-    token.access_token = access_token;
-    token.refresh_token = refresh_token;
-    token.access_token_expiry = access_token_expiry;
-    token.refresh_token_expiry = refresh_token_expiry;
+    const newToken = new Token();
+    newToken.user = userUuid;
+    newToken.access_token = access_token;
+    newToken.refresh_token = refresh_token;
+    newToken.access_token_expiry = access_token_expiry;
+    newToken.refresh_token_expiry = refresh_token_expiry;
 
-    await this.tokenRepository.save(token);
+    await this.tokenRepository.save(newToken);
 
     return { access_token, refresh_token };
   }
@@ -75,7 +88,7 @@ export class TokenService {
       throw new Error('Refresh Token 不合法或已过期');
     }
 
-    const newTokens = await this.generateTokens(token.uuid);
+    const newTokens = await this.generateTokens(token.user);
 
     token.access_token = newTokens.access_token;
     token.refresh_token = newTokens.refresh_token;

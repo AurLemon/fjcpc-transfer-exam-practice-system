@@ -1,10 +1,13 @@
 // src/database/entities/token.entity
 
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 @Entity('tokens')
 export class Token {
-  @PrimaryColumn({ type: 'varchar', length: 36 })
+  @PrimaryGeneratedColumn('uuid')
   uuid: string; // 生成的 UUID 主键
+
+  @Column({ type: 'varchar', length: 36 })
+  user: string; // 用户的 UUID（非主键）
 
   @Column({ type: 'varchar', length: 500 })
   access_token: string; // 访问 Token

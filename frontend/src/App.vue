@@ -12,20 +12,34 @@ const authStore = useAuthStore()
 const userStore = useUserStore()
 const questionStore = useQuestionStore()
 
+const REQUEST_DURATION = 60000
+
 const init = (async () => {
-    if (await userStore.readLogin()) {
-        await Promise.all([authStore.getUserProfile(), userStore.fetchUserProgress(), userStore.fetchStarProgress()])
-    }
+    try {
+        if (await userStore.readLogin()) {
+            await Promise.all([authStore.getUserProfile(), userStore.fetchUserProgress(), userStore.fetchStarProgress()])
 
-    if (!userStore.login.isLogged) {
-        userStore.setting = authStore.readUserSetting() || userStore.setting
-    } else {
-        await authStore.getUserSetting()
-    }
+            setInterval(async () => {
+                await Promise.all([authStore.getUserProfile(), userStore.fetchUserProgress(), userStore.fetchStarProgress()])
+            }, REQUEST_DURATION)
+        }
 
-    questionStore.getQuestionInfo(async () => {
-        userStore.updateProgressCount()
-    })
+        if (!userStore.login.isLogged) {
+            userStore.setting = authStore.readUserSetting() || userStore.setting
+        } else {
+            await authStore.getUserSetting()
+
+            setInterval(async () => {
+                await authStore.getUserSetting()
+            }, REQUEST_DURATION)
+        }
+
+        await questionStore.getQuestionInfo(async () => {
+            userStore.updateProgressCount()
+        })
+    } catch (error) {
+        console.error('Initialization error:', error)
+    }
 })()
 </script>
 
