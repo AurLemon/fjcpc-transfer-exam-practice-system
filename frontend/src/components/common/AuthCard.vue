@@ -165,6 +165,7 @@ watch(loadStatus, (newStatus) => {
         <div class="view-auth-desc">
             <div class="view-auth-desc__title">重置须知</div>
             <ul class="view-auth-desc__list">
+                <li>用昵称的暂时不支持重置密码，有需要的先私聊联系我下。</li>
                 <li>密码可以为空，但考虑到安全性不建议使用空密码。</li>
                 <li>请输入原账号的身份证号、以及你的姓名以核验身份。随后输入新密码即可。</li>
             </ul>

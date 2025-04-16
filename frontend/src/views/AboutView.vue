@@ -127,6 +127,12 @@ export default defineComponent({
                         Nest.js
                     </a>
                 </div>
+                <div class="page-about-footer__techstack" v-tippy="{ content: '缓存的' }">
+                    <a href="https://redis.io/" target="_blank">
+                        <img class="tech-logo" src="../assets/images/logo/Redis_logo.svg" />
+                        Redis
+                    </a>
+                </div>
                 <div class="page-about-footer__techstack" v-tippy="{ content: '第一次用，高级' }">
                     <a href="https://typeorm.io/" target="_blank">
                         <img class="tech-logo" src="../assets/images/logo/TypeORM_logo.png" />

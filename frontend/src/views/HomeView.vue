@@ -81,7 +81,7 @@ const openLoginCard = () => {
                 <div class="page-guide-desc__text">
                     <div class="page-guide-desc__title">一定要身份证登录吗？</div>
                     <div class="page-guide-desc__subtitle">
-                        不登录也能做题，但是数据只保存在浏览器。只有船政的转轨系统有你了才能登录哦，没注册的会默认注册。担心身份证泄露的可以不登录。
+                        不登录也能做题，但是数据只保存在浏览器。不管有没有登录的直接打开，没注册的会默认注册。担心身份证泄露的可以用昵称登录。
                     </div>
                 </div>
             </div>
