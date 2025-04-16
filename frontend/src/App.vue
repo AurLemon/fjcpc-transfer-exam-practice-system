@@ -18,20 +18,12 @@ const init = (async () => {
     try {
         if (await userStore.readLogin()) {
             await Promise.all([authStore.getUserProfile(), userStore.fetchUserProgress(), userStore.fetchStarProgress()])
-
-            // setInterval(async () => {
-            //     await Promise.all([authStore.getUserProfile(), userStore.fetchUserProgress(), userStore.fetchStarProgress()])
-            // }, REQUEST_DURATION)
         }
 
         if (!userStore.login.isLogged) {
             userStore.setting = authStore.readUserSetting() || userStore.setting
         } else {
             await authStore.getUserSetting()
-
-            setInterval(async () => {
-                await authStore.getUserSetting()
-            }, REQUEST_DURATION)
         }
 
         await questionStore.getQuestionInfo(async () => {
