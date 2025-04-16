@@ -202,23 +202,19 @@ const syncIdNumber = async () => {
     }
 }
 
-// 新增变量
 const isEditNick = ref<boolean>(false)
 const nickInput = ref<string>(userStore.profile.nick || '')
 
-// 编辑模式切换
 const toggleEdit = () => {
     isEditNick.value = true
-    nickInput.value = userStore.profile.nick || '' // 保留当前昵称
+    nickInput.value = userStore.profile.nick || ''
 }
 
-// 取消编辑
 const cancelEdit = () => {
     isEditNick.value = false
-    nickInput.value = userStore.profile.nick || '' // 恢复原值
+    nickInput.value = userStore.profile.nick || ''
 }
 
-// 保存昵称（直接传接口，无需加密）
 const saveNick = async () => {
     if (!nickInput.value.trim()) {
         notifyStore.addMessage('error', '昵称不能为空')
@@ -229,7 +225,7 @@ const saveNick = async () => {
         const response: any = await post(
             '/user/nick',
             {
-                nick: nickInput.value // 直接发送明文
+                nick: nickInput.value
             },
             {
                 headers: {
@@ -240,13 +236,17 @@ const saveNick = async () => {
 
         if (response.data.code === 200) {
             notifyStore.addMessage('success', '昵称修改成功')
-            await authStore.getUserProfile() // 刷新用户资料
-            isEditNick.value = false
+            await authStore.getUserProfile()
         } else {
-            notifyStore.addMessage('error', `修改失败：${response.message || '未知错误'}`)
+            console.log(response.data)
+
+            notifyStore.addMessage('failed', `修改失败：${response.data.data.message || '未知错误'}`)
         }
     } catch (error) {
-        notifyStore.addMessage('error', '网络错误，请重试')
+        notifyStore.addMessage('failed', '网络错误，请重试')
+    } finally {
+        isEditNick.value = false
+        nickInput.value = ''
     }
 }
 </script>
@@ -260,7 +260,7 @@ const saveNick = async () => {
                     <div class="page-advanced-user__name">{{ userStore.profile.name }}</div>
                     <div class="page-advanced-user__id">{{ userStore.profile.id_number }}</div>
                 </div>
-                <div class="page-advanced-user__wrapper" v-else>
+                <div class="page-advanced-user__wrapper" v-else :class="{ nick: userStore.profile.nick }">
                     <div class="page-advanced-user__name">{{ userStore.profile.nick }}</div>
                 </div>
                 <div class="page-advanced-user__uuid">{{ userStore.profile.uuid }}</div>
@@ -306,7 +306,7 @@ const saveNick = async () => {
                     {{ userStore.profile.nick || '无' }}
                 </div>
                 <div class="page-advanced-basic__wrapper" v-else>
-                    <input v-model="nickInput" type="text" placeholder="请输入新昵称" class="page-advanced-basic__input" />
+                    <input v-model="nickInput" type="text" placeholder="请输入新昵称" class="page-advanced-basic__input" max-length="20" />
                 </div>
             </div>
             <div class="page-advanced-basic__idnumber" v-if="userStore.login.isLogged">
@@ -450,16 +450,26 @@ const saveNick = async () => {
             flex-direction: column;
             align-items: center;
             margin: 0.75rem 0 1.5rem 0;
+            width: 100%;
 
             .page-advanced-user__wrapper {
                 font-size: 24px;
                 display: flex;
                 align-items: center;
                 gap: 1rem;
+
+                &.nick {
+                    width: 100%;
+                }
             }
 
             .page-advanced-user__name {
+                width: 100%;
                 font-weight: 600;
+                text-align: center;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .page-advanced-user__id {
@@ -612,6 +622,9 @@ const saveNick = async () => {
                 width: 100%;
                 font-weight: 600;
                 font-size: 18px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
 
                 input {
                     width: 100%;

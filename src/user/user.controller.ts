@@ -149,6 +149,14 @@ export class UserController {
       return ApiResponseUtil.error(400, 'nick_required', '必须提供新昵称');
     }
 
+    if (newNick.length > 250) {
+      return ApiResponseUtil.error(
+        400,
+        'nick_too_long',
+        '昵称长度不能超过250个字符',
+      );
+    }
+
     if (/^\d+$/.test(newNick)) {
       return ApiResponseUtil.error(
         400,

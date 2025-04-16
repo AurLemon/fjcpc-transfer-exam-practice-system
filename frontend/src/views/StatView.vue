@@ -1055,13 +1055,13 @@ onMounted(() => {
 
         .page-stat-userstat__grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             grid-gap: 0.75rem;
             padding: 0.75rem;
             overflow-y: auto;
 
             @include screen.media-screen(phone) {
-                grid-template-columns: repeat(1, 1fr);
+                grid-template-columns: repeat(1, minmax(0, 1fr));
             }
 
             .page-stat-userstat__itemwrapper {
@@ -1098,6 +1098,7 @@ onMounted(() => {
                     color: var(--color-base--emphasized);
                     font-size: 24px;
                     font-weight: 500;
+                    width: 100%;
                     margin: 0 2px;
                     margin-bottom: 0.25rem;
 

@@ -98,6 +98,10 @@ const fetchData = async () => {
             handleError('昵称已被他人注册')
             return
         }
+        if (data.type === 'nick_too_long') {
+            handleError('昵称过长')
+            return
+        }
         if (data.type === 'nick_invalid') {
             handleError('昵称非法，不能为纯数字')
             return

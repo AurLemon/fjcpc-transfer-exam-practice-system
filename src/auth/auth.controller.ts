@@ -162,6 +162,14 @@ export class AuthController {
           );
         }
 
+        if (nick.length > 250) {
+          return ApiResponseUtil.error(
+            400,
+            'nick_too_long',
+            '昵称长度不能超过250个字符',
+          );
+        }
+
         const newUser = await this.userService.createUser(
           null,
           nick,
