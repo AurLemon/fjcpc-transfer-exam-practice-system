@@ -172,7 +172,7 @@ export const useAuthStore = defineStore('auth', {
                 this.isLoading = false
                 setTimeout(() => {
                     this.isTokenRefreshing = false
-                    userStore.login.refreshing = true
+                    userStore.login.refreshing = false
                 }, 1500)
             }
         }
