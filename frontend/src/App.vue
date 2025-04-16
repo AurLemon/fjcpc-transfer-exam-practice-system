@@ -19,9 +19,9 @@ const init = (async () => {
         if (await userStore.readLogin()) {
             await Promise.all([authStore.getUserProfile(), userStore.fetchUserProgress(), userStore.fetchStarProgress()])
 
-            setInterval(async () => {
-                await Promise.all([authStore.getUserProfile(), userStore.fetchUserProgress(), userStore.fetchStarProgress()])
-            }, REQUEST_DURATION)
+            // setInterval(async () => {
+            //     await Promise.all([authStore.getUserProfile(), userStore.fetchUserProgress(), userStore.fetchStarProgress()])
+            // }, REQUEST_DURATION)
         }
 
         if (!userStore.login.isLogged) {
