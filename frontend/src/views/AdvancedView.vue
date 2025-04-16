@@ -628,6 +628,8 @@ const saveNick = async () => {
 
                 input {
                     width: 100%;
+                    font-weight: 600;
+                    font-size: 1.0625rem;
                 }
             }
         }
