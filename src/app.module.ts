@@ -20,6 +20,7 @@ import { StarQuestion } from './database/entities/star_question.entity';
 import { UpdatedQuestion } from './database/entities/updated_question.entity';
 import { RedisModule } from './redis/redis.module';
 
+import { ExportModule } from './export/export.module';
 import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
@@ -93,6 +94,7 @@ import { MigrateService } from './migrate/migrate.service';
     QuestionModule,
     AdminModule,
     CryptoModule,
+    ExportModule,
   ],
   providers: [MigrateService, RedisModule],
 })
