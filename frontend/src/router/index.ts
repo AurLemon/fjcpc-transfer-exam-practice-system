@@ -35,6 +35,11 @@ const router = createRouter({
             component: () => import('../views/StatView.vue')
         },
         {
+            path: '/export',
+            name: 'export',
+            component: () => import('../views/ExportView.vue')
+        },
+        {
             path: '/advanced',
             name: 'advanced',
             component: () => import('../views/AdvancedView.vue')
