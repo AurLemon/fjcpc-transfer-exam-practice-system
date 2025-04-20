@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Question } from '../database/entities/question.entity';
-import * as docx from 'docx';
+import { RequestInfo } from '../database/entities/request_info.entity';
 import {
   Document,
   Paragraph,
@@ -19,20 +19,98 @@ export class ExportService {
   constructor(
     @InjectRepository(Question)
     private questionRepository: Repository<Question>,
+    @InjectRepository(RequestInfo)
+    private requestInfoRepository: Repository<RequestInfo>,
   ) {}
 
   /**
    * 从数据库获取随机题目
    * @param count 要获取的题目数量
+   * @param courseType 课程类型(1:文化课, 2:专业课, 0:全部)
+   * @param subjectType 科目类型(根据课程类型不同而不同, 0:全部)
+   * @param includeImage 是否包含带图片的题目
    * @returns 问题实体数组
    */
-  async getRandomQuestions(count: number): Promise<Question[]> {
-    return this.questionRepository
+  async getRandomQuestions(
+    count: number,
+    courseType: number = 0,
+    subjectType: number = 0,
+    includeImage: boolean = true,
+  ): Promise<Question[]> {
+    const query = this.questionRepository
       .createQueryBuilder('question')
-      .where('question.status = :status', { status: true })
+      .where('question.status = :status', { status: true });
+
+    // 根据课程类型筛选
+    if (courseType > 0) {
+      query.andWhere('question.course = :course', { course: courseType });
+
+      // 根据科目类型筛选
+      if (subjectType > 0) {
+        query.andWhere('question.subject = :subject', { subject: subjectType });
+      }
+    }
+
+    // 处理是否包含带图片的题目
+    if (!includeImage) {
+      query
+        .andWhere('question.content NOT LIKE :imagePattern', {
+          imagePattern: '%<img%',
+        })
+        .andWhere('question.options NOT LIKE :imagePattern', {
+          imagePattern: '%<img%',
+        });
+    }
+
+    return query
       .orderBy('RAND()') // MySQL特定的随机排序
       .limit(count)
       .getMany();
+  }
+
+  /**
+   * 获取可用的课程和科目列表
+   * @returns 课程和科目信息
+   */
+  async getCoursesAndSubjects(): Promise<{
+    courses: { id: number; name: string }[];
+    subjects: { courseId: number; id: number; name: string }[];
+  }> {
+    // 获取专业课科目信息
+    const requestInfos = await this.requestInfoRepository.find({
+      where: { course: 2 }, // 专业课
+      select: ['course', 'subject', 'profession_name', 'profession_id'],
+    });
+
+    // 构建课程列表
+    const courses = [
+      { id: 0, name: '全部' },
+      { id: 1, name: '文化课' },
+      { id: 2, name: '专业课' },
+    ];
+
+    // 构建科目列表
+    const subjects = [
+      { courseId: 0, id: 0, name: '全部' }, // 全部课程-全部科目
+      { courseId: 1, id: 0, name: '全部' }, // 文化课-全部科目
+      { courseId: 2, id: 0, name: '全部' }, // 专业课-全部科目
+      // 文化课科目
+      { courseId: 1, id: 1, name: '语文' },
+      { courseId: 1, id: 2, name: '数学' },
+      { courseId: 1, id: 3, name: '英语' },
+      { courseId: 1, id: 4, name: '政治' },
+    ];
+
+    // 添加专业课科目
+    requestInfos.forEach((info) => {
+      subjects.push({
+        courseId: 2,
+        id: info.subject,
+        name: info.profession_name || `未知专业(${info.subject})`,
+      });
+    });
+
+    return { courses, subjects };
   }
 
   /**
@@ -191,10 +269,23 @@ export class ExportService {
   /**
    * 生成Word文档
    * @param count 题目数量
+   * @param courseType 课程类型
+   * @param subjectType 科目类型
+   * @param includeImage 是否包含带图片的题目
    * @returns 包含Word文档的Buffer
    */
-  async exportToWord(count: number): Promise<Buffer> {
-    const questions = await this.getRandomQuestions(count);
+  async exportToWord(
+    count: number,
+    courseType: number = 0,
+    subjectType: number = 0,
+    includeImage: boolean = true,
+  ): Promise<Buffer> {
+    const questions = await this.getRandomQuestions(
+      count,
+      courseType,
+      subjectType,
+      includeImage,
+    );
 
     const doc = new Document({
       sections: [
