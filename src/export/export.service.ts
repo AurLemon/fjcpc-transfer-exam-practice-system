@@ -29,6 +29,7 @@ export class ExportService {
    * @param courseType 课程类型(1:文化课, 2:专业课, 0:全部)
    * @param subjectType 科目类型(根据课程类型不同而不同, 0:全部)
    * @param includeImage 是否包含带图片的题目
+   * @param questionType 题目类型(0:单选, 1:多选, 2:判断题, 8:阅读题, -1:全部)
    * @returns 问题实体数组
    */
   async getRandomQuestions(
@@ -36,6 +37,7 @@ export class ExportService {
     courseType: number = 0,
     subjectType: number = 0,
     includeImage: boolean = true,
+    questionType: number = -1,
   ): Promise<Question[]> {
     const query = this.questionRepository
       .createQueryBuilder('question')
@@ -49,6 +51,11 @@ export class ExportService {
       if (subjectType > 0) {
         query.andWhere('question.subject = :subject', { subject: subjectType });
       }
+    }
+
+    // 根据题目类型筛选
+    if (questionType >= 0) {
+      query.andWhere('question.type = :type', { type: questionType });
     }
 
     // 处理是否包含带图片的题目
@@ -84,14 +91,12 @@ export class ExportService {
 
     // 构建课程列表
     const courses = [
-      { id: 0, name: '全部' },
       { id: 1, name: '文化课' },
       { id: 2, name: '专业课' },
     ];
 
     // 构建科目列表
     const subjects = [
-      { courseId: 0, id: 0, name: '全部' }, // 全部课程-全部科目
       { courseId: 1, id: 0, name: '全部' }, // 文化课-全部科目
       { courseId: 2, id: 0, name: '全部' }, // 专业课-全部科目
       // 文化课科目
@@ -175,52 +180,50 @@ export class ExportService {
   }
 
   /**
-   * 格式化问题文本，移除HTML标签
+   * 格式化问题文本，移除HTML标签并转换HTML实体
    * @param text HTML文本
    * @returns 纯文本
    */
   private stripHtml(text: string): string {
-    return text.replace(/<[^>]+(>|$)/g, '');
-  }
+    if (typeof window === 'undefined') {
+      // 在Node.js环境中
+      // 先替换常见的HTML实体
+      const entityMap: Record<string, string> = {
+        '&nbsp;': ' ',
+        '&ensp;': ' ',
+        '&emsp;': ' ',
+        '&amp;': '&',
+        '&lt;': '<',
+        '&gt;': '>',
+        '&quot;': '"',
+        '&apos;': "'",
+        '&ldquo;': '"',
+        '&rdquo;': '"',
+        '&lsquo;': `'`,
+        '&rsquo;': `'`,
+        '&mdash;': '—',
+        '&ndash;': '–',
+        '&hellip;': '…',
+      };
 
-  /**
-   * 格式化选项
-   * @param options 选项数组
-   * @param questionType 题目类型
-   * @returns 格式化后的选项字符串和图片URL
-   */
-  private formatOptions(
-    options: any[],
-    questionType: number,
-  ): { text: string; imageUrls: Map<string, string> } {
-    // 判断题特殊处理
-    if (questionType === 2) {
-      // 根据前端代码，type=2为判断题
-      return { text: 'T. 对     F. 错', imageUrls: new Map() };
-    }
-
-    if (!options || !Array.isArray(options) || options.length === 0) {
-      return { text: '', imageUrls: new Map() };
-    }
-
-    let formattedText = '';
-    const imageUrlsMap = new Map<string, string>();
-
-    options.forEach((option) => {
-      const label = option.xx || '';
-      const text = this.stripHtml(option.txt || '');
-      formattedText += `${label}. ${text}     `;
-
-      // 提取选项中的图片
-      const imageUrls = this.extractImagesFromHtml(option.txt || '');
-      if (imageUrls.length > 0) {
-        imageUrls.forEach((url) => {
-          imageUrlsMap.set(url, label);
-        });
+      // 替换所有已知的HTML实体
+      let result = text;
+      for (const [entity, char] of Object.entries(entityMap)) {
+        result = result.replace(new RegExp(entity, 'g'), char);
       }
-    });
 
-    return { text: formattedText.trim(), imageUrls: imageUrlsMap };
+      // 处理数字HTML实体 (如 &#160;)
+      result = result.replace(/&#(\d+);/g, (match, dec) => {
+        return String.fromCharCode(parseInt(dec, 10));
+      });
+
+      // 最后移除所有HTML标签
+      return result.replace(/<[^>]+(>|$)/g, '');
+    } else {
+      // 在浏览器环境中可以使用DOM API
+      const doc = new DOMParser().parseFromString(text, 'text/html');
+      return doc.body.textContent || '';
+    }
   }
 
   /**
@@ -267,11 +270,88 @@ export class ExportService {
   }
 
   /**
+   * 格式化选项
+   * @param options 选项数组
+   * @param questionType 题目类型
+   * @param subOptions 子选项数组（用于阅读理解题）
+   * @returns 格式化后的选项字符串和图片URL
+   */
+  private formatOptions(
+    options: any[],
+    questionType: number,
+    subOptions?: any[],
+  ): { text: string; imageUrls: Map<string, string> } {
+    // 判断题特殊处理
+    if (questionType === 2) {
+      // 根据前端代码，type=2为判断题
+      return { text: 'T. 对     F. 错', imageUrls: new Map() };
+    }
+
+    // 阅读理解题特殊处理
+    if (questionType === 8 && subOptions && subOptions.length > 0) {
+      let formattedText = '';
+      const imageUrlsMap = new Map<string, string>();
+
+      subOptions.forEach((subOption, subIndex) => {
+        // 添加题干
+        if (subOption.tg) {
+          formattedText += `${subIndex + 1}. ${this.stripHtml(subOption.tg)}\n`;
+        }
+
+        // 添加选项
+        if (subOption.list && Array.isArray(subOption.list)) {
+          subOption.list.forEach((option) => {
+            const label = option.xx || '';
+            const text = this.stripHtml(option.txt || '');
+            formattedText += `   ${label}. ${text}     `;
+
+            // 提取选项中的图片
+            const imageUrls = this.extractImagesFromHtml(option.txt || '');
+            if (imageUrls.length > 0) {
+              imageUrls.forEach((url) => {
+                imageUrlsMap.set(url, `${subIndex + 1}${label}`);
+              });
+            }
+          });
+
+          formattedText += '\n';
+        }
+      });
+
+      return { text: formattedText.trim(), imageUrls: imageUrlsMap };
+    }
+
+    if (!options || !Array.isArray(options) || options.length === 0) {
+      return { text: '', imageUrls: new Map() };
+    }
+
+    let formattedText = '';
+    const imageUrlsMap = new Map<string, string>();
+
+    options.forEach((option) => {
+      const label = option.xx || '';
+      const text = this.stripHtml(option.txt || '');
+      formattedText += `${label}. ${text}     `;
+
+      // 提取选项中的图片
+      const imageUrls = this.extractImagesFromHtml(option.txt || '');
+      if (imageUrls.length > 0) {
+        imageUrls.forEach((url) => {
+          imageUrlsMap.set(url, label);
+        });
+      }
+    });
+
+    return { text: formattedText.trim(), imageUrls: imageUrlsMap };
+  }
+
+  /**
    * 生成Word文档
    * @param count 题目数量
    * @param courseType 课程类型
    * @param subjectType 科目类型
    * @param includeImage 是否包含带图片的题目
+   * @param questionType 题目类型(0:单选, 1:多选, 2:判断题, 8:阅读题, -1:全部)
    * @returns 包含Word文档的Buffer
    */
   async exportToWord(
@@ -279,12 +359,14 @@ export class ExportService {
     courseType: number = 0,
     subjectType: number = 0,
     includeImage: boolean = true,
+    questionType: number = -1,
   ): Promise<Buffer> {
     const questions = await this.getRandomQuestions(
       count,
       courseType,
       subjectType,
       includeImage,
+      questionType,
     );
 
     const doc = new Document({
@@ -300,24 +382,24 @@ export class ExportService {
   }
 
   /**
-   * 创建图片Run对象
+   * 创建图片Run对象，保持图片宽高比
    * @param imageBuffer 图片数据
    * @param url 图片URL (用于获取类型)
-   * @param width 宽度
-   * @param height 高度
+   * @param maxWidth 最大宽度
    * @returns ImageRun对象
    */
   private createImageRun(
     imageBuffer: Buffer,
     url: string,
-    width: number,
-    height: number,
+    maxWidth: number,
   ): ImageRun {
+    // 需要同时设置width和height以满足类型要求
+    // 使用一个自动缩放的比例，让大多数图片保持合理的宽高比
     const options = {
       data: imageBuffer,
       transformation: {
-        width,
-        height,
+        width: maxWidth,
+        height: Math.round(maxWidth * 0.6), // 使用黄金比例近似值，避免拉伸
       },
       type: this.getImageType(url),
     };
@@ -354,18 +436,10 @@ export class ExportService {
       const questionText = this.stripHtml(question.content);
       const questionImages = this.extractImagesFromHtml(question.content);
 
-      // 处理选项
-      const options = question.options as any[];
-      const { text: formattedOptions, imageUrls: optionImagesMap } =
-        this.formatOptions(options, question.type);
-
-      // 获取正确答案
-      const correctAnswer = this.getCorrectAnswerLabel(question, options);
-
       // 添加题目文本
       content.push(
         new Paragraph({
-          text: `${questionNumber}.${questionText}`,
+          text: `${questionNumber}.[${this.renderQuestionType(question.type)}] ${questionText}`,
         }),
       );
 
@@ -378,7 +452,8 @@ export class ExportService {
             content.push(
               new Paragraph({
                 children: [
-                  this.createImageRun(imageBuffer, imageUrl, 400, 200),
+                  // 只指定最大宽度，保持原始宽高比
+                  this.createImageRun(imageBuffer, imageUrl, 450),
                 ],
                 alignment: AlignmentType.CENTER,
               }),
@@ -394,6 +469,14 @@ export class ExportService {
           }
         }
       }
+
+      // 处理选项
+      const options = question.options as any[];
+      const subOptions = question.sub_options as any[];
+
+      // 根据题目类型选择合适的选项处理方式
+      const { text: formattedOptions, imageUrls: optionImagesMap } =
+        this.formatOptions(options, question.type, subOptions);
 
       // 添加选项文本
       content.push(
@@ -419,7 +502,8 @@ export class ExportService {
               }),
               new Paragraph({
                 children: [
-                  this.createImageRun(imageBuffer, imageUrl, 300, 150),
+                  // 只指定最大宽度，保持原始宽高比
+                  this.createImageRun(imageBuffer, imageUrl, 350),
                 ],
                 alignment: AlignmentType.CENTER,
               }),
@@ -436,7 +520,8 @@ export class ExportService {
         }
       }
 
-      // 添加正确答案
+      // 获取正确答案并添加
+      const correctAnswer = this.getCorrectAnswerLabel(question, options);
       content.push(
         new Paragraph({
           text: `正确答案：${correctAnswer}。`,
@@ -446,5 +531,25 @@ export class ExportService {
     }
 
     return content;
+  }
+
+  /**
+   * 渲染题目类型名称
+   * @param type 题目类型
+   * @returns 题目类型名称
+   */
+  private renderQuestionType(type: number): string {
+    switch (type) {
+      case 0:
+        return '单选题';
+      case 1:
+        return '多选题';
+      case 2:
+        return '判断题';
+      case 8:
+        return '阅读题';
+      default:
+        return '未知题型';
+    }
   }
 }

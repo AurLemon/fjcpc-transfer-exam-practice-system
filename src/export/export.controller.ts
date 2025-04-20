@@ -1,6 +1,14 @@
-import { Controller, Get, Query, Res, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Res,
+  HttpStatus,
+  HttpException,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { ExportService } from './export.service';
+import { ApiResponseUtil } from '../common/api.response';
 
 @Controller('export')
 export class ExportController {
@@ -12,6 +20,7 @@ export class ExportController {
     @Query('course') course: number = 0,
     @Query('subject') subject: number = 0,
     @Query('includeImage') includeImage: boolean = true,
+    @Query('questionType') questionType: number = -1,
     @Res() res: Response,
   ) {
     try {
@@ -20,6 +29,7 @@ export class ExportController {
         course,
         subject,
         includeImage,
+        questionType,
       );
 
       // 构建文件名，包含筛选信息
@@ -27,33 +37,43 @@ export class ExportController {
       const courseInfo = course > 0 ? `_c${course}` : '';
       const subjectInfo = subject > 0 ? `_s${subject}` : '';
       const imageInfo = !includeImage ? '_noimg' : '';
+      const typeInfo = questionType >= 0 ? `_t${questionType}` : '';
 
       res.set({
         'Content-Type':
           'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'Content-Disposition': `attachment; filename="questions${courseInfo}${subjectInfo}${imageInfo}_${timestamp}.docx"`,
+        'Content-Disposition': `attachment; filename="questions${courseInfo}${subjectInfo}${imageInfo}${typeInfo}_${timestamp}.docx"`,
         'Content-Length': buffer.length,
       });
 
       res.end(buffer);
     } catch (error) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Failed to export questions',
-        error: error.message,
-      });
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json(
+          ApiResponseUtil.error(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            'export_failed',
+            'Failed to export questions: ' + error.message,
+          ),
+        );
     }
   }
 
   @Get('config')
-  async getExportConfig(@Res() res: Response) {
+  async getExportConfig() {
     try {
       const config = await this.exportService.getCoursesAndSubjects();
-      res.json(config);
+      return ApiResponseUtil.success(HttpStatus.OK, config);
     } catch (error) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Failed to get export configuration',
-        error: error.message,
-      });
+      throw new HttpException(
+        ApiResponseUtil.error(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          'config_fetch_failed',
+          'Failed to get export configuration: ' + error.message,
+        ),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

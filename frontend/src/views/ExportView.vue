@@ -26,7 +26,8 @@ const exportSettings = ref({
     count: 50,
     course: 2,
     subject: 1,
-    includeImage: false
+    includeImage: false,
+    questionType: -1 // 添加题目类型选择，默认为-1（全部题型）
 })
 
 // 配置数据
@@ -48,7 +49,7 @@ const getExportConfig = async () => {
     isLoading.value = true
     try {
         const response = await get('/export/config')
-        config.value = response.data
+        config.value = response.data.data
     } catch (error) {
         notifyStore.addMessage('failed', '获取导出配置失败，请稍后再试')
         console.error('Failed to get export configuration', error)
@@ -57,7 +58,6 @@ const getExportConfig = async () => {
     }
 }
 
-// 导出题目
 const exportQuestions = () => {
     isLoading.value = true
 
@@ -68,6 +68,7 @@ const exportQuestions = () => {
         params.append('course', exportSettings.value.course.toString())
         params.append('subject', exportSettings.value.subject.toString())
         params.append('includeImage', exportSettings.value.includeImage.toString())
+        params.append('questionType', exportSettings.value.questionType.toString()) // 添加题目类型参数
 
         // 构建完整URL
         const url = `/api/export/questions?${params.toString()}`
@@ -89,10 +90,11 @@ const exportQuestions = () => {
 // 重置表单
 const resetForm = () => {
     exportSettings.value = {
-        count: 10,
-        course: 0,
-        subject: 0,
-        includeImage: true
+        count: 50,
+        course: 2,
+        subject: 1,
+        includeImage: false,
+        questionType: -1 // 重置时也要设置题目类型为全部
     }
 }
 
@@ -152,13 +154,26 @@ onMounted(() => {
                 </div>
 
                 <div class="export-view-field">
+                    <label for="questionType">题目类型</label>
+                    <div class="export-view-input-wrapper">
+                        <select id="questionType" v-model="exportSettings.questionType" class="export-view-select">
+                            <option value="-1">所有题型</option>
+                            <option value="0">单选题</option>
+                            <option value="1">多选题</option>
+                            <option value="2">判断题</option>
+                            <option value="8">阅读题</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="export-view-field">
                     <label for="includeImage">包含图片</label>
                     <div class="export-view-input-wrapper">
                         <div class="export-view-checkbox-wrapper">
                             <input type="checkbox" id="includeImage" v-model="exportSettings.includeImage" class="export-view-checkbox" />
                             <span class="export-view-checkbox-label">包含带图片的题目</span>
                         </div>
-                        <div class="export-view-input-hint">如果不勾选，将只导出不包含图片的题目，适合打印</div>
+                        <div class="export-view-input-hint">有一点 BUG，图片的尺寸不太对，如果不勾选，将只导出不包含图片的题目。</div>
                     </div>
                 </div>
             </div>
