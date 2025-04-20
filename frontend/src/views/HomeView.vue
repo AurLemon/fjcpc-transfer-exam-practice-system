@@ -42,9 +42,8 @@ const openLoginCard = () => {
         <div class="page-guide-content">
             <div class="page-guide-content__subtitle">船政上什么课？实习什么时候？选修课有什么？其它三个学校怎么样？……</div>
             <div class="page-guide-content__title">
-                <b>船政FAQ页</b>和<b>讨论板块</b>大概将于4月20日前上线<br />
-                <div class="tips">加讨论页是因为找了几个同学帮忙问问其他三个学校的要不要这个网站的 那正好加个交流区OvO</div>
-                <div class="tips">其实4月21号甚至5月再开始刷都来得及……</div>
+                <b>船政FAQ页</b>大概将于4月26日前上线<br />
+                <div class="tips">再拖几天……！但是导出功能有了啊。</div>
             </div>
         </div>
         <div class="page-guide-desc">
