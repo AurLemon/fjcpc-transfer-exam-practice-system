@@ -13,6 +13,7 @@ import {
   AlignmentType,
 } from 'docx';
 import axios from 'axios';
+import * as sharp from 'sharp';
 
 @Injectable()
 export class ExportService {
@@ -227,49 +228,6 @@ export class ExportService {
   }
 
   /**
-   * 获取正确答案标签
-   * @param question 问题实体
-   * @param options 选项数组
-   * @returns 正确答案字符串
-   */
-  private getCorrectAnswerLabel(question: Question, options: any[]): string {
-    if (!question.answer) return '';
-
-    // 判断题特殊处理
-    if (question.type === 2) {
-      // 判断题
-      const answerId = Array.isArray(question.answer)
-        ? Array.isArray(question.answer[0])
-          ? question.answer[0][0]
-          : question.answer[0]
-        : question.answer;
-
-      // 查找对应选项
-      const option = options.find(
-        (opt) => opt.id.toString() === answerId.toString(),
-      );
-      // 根据选项内容确定是T还是F
-      return option && option.txt === '对' ? 'T' : 'F';
-    }
-
-    // 处理普通选择题
-    if (!options || options.length === 0) return '';
-
-    const answerIds = Array.isArray(question.answer)
-      ? Array.isArray(question.answer[0])
-        ? question.answer[0]
-        : question.answer
-      : [question.answer];
-
-    const answerLabels = answerIds.map((id) => {
-      const option = options.find((opt) => opt.id.toString() === id.toString());
-      return option ? option.xx : '';
-    });
-
-    return answerLabels.join(', ');
-  }
-
-  /**
    * 格式化选项
    * @param options 选项数组
    * @param questionType 题目类型
@@ -295,7 +253,7 @@ export class ExportService {
       subOptions.forEach((subOption, subIndex) => {
         // 添加题干
         if (subOption.tg) {
-          formattedText += `${subIndex + 1}. ${this.stripHtml(subOption.tg)}\n`;
+          formattedText += `(${subIndex + 1}) ${this.stripHtml(subOption.tg)}\n`;
         }
 
         // 添加选项
@@ -303,24 +261,25 @@ export class ExportService {
           subOption.list.forEach((option) => {
             const label = option.xx || '';
             const text = this.stripHtml(option.txt || '');
-            formattedText += `   ${label}. ${text}     `;
+            formattedText += `   ${label}. ${text}\n`; // 添加换行使每个选项独占一行
 
             // 提取选项中的图片
             const imageUrls = this.extractImagesFromHtml(option.txt || '');
             if (imageUrls.length > 0) {
               imageUrls.forEach((url) => {
-                imageUrlsMap.set(url, `${subIndex + 1}${label}`);
+                imageUrlsMap.set(url, `(${subIndex + 1})${label}`);
               });
             }
           });
 
-          formattedText += '\n';
+          formattedText += '\n'; // 子题目之间添加额外空行
         }
       });
 
       return { text: formattedText.trim(), imageUrls: imageUrlsMap };
     }
 
+    // 普通选择题处理
     if (!options || !Array.isArray(options) || options.length === 0) {
       return { text: '', imageUrls: new Map() };
     }
@@ -331,7 +290,7 @@ export class ExportService {
     options.forEach((option) => {
       const label = option.xx || '';
       const text = this.stripHtml(option.txt || '');
-      formattedText += `${label}. ${text}     `;
+      formattedText += `${label}. ${text}\n`; // 每个选项单独成行
 
       // 提取选项中的图片
       const imageUrls = this.extractImagesFromHtml(option.txt || '');
@@ -343,6 +302,83 @@ export class ExportService {
     });
 
     return { text: formattedText.trim(), imageUrls: imageUrlsMap };
+  }
+
+  /**
+   * 获取正确答案标签
+   * @param question 问题实体
+   * @param options 选项数组
+   * @returns 正确答案字符串
+   */
+  private getCorrectAnswerLabel(question: Question, options: any[]): string {
+    if (!question.answer) return '';
+
+    // 判断题特殊处理
+    if (question.type === 2) {
+      // 判断题
+      const answerId = Array.isArray(question.answer)
+        ? Array.isArray(question.answer[0])
+          ? question.answer[0][0]
+          : question.answer[0]
+        : question.answer;
+
+      // 查找对应选项
+      const option = options.find(
+        (opt) => opt.id.toString() === answerId.toString(),
+      );
+      // 根据选项内容确定是T还是F
+      return option && option.txt === '对' ? 'T' : 'F';
+    }
+
+    // 阅读理解题特殊处理
+    if (
+      question.type === 8 &&
+      Array.isArray(question.answer) &&
+      Array.isArray(question.answer[0])
+    ) {
+      // 获取子题目答案
+      let answerText = '';
+      const subOptions = question.sub_options || [];
+
+      question.answer.forEach((subAnswer, index) => {
+        const subOptionLabels = [];
+        if (Array.isArray(subAnswer)) {
+          // 处理每个子题目的答案
+          const currentSubOptions = subOptions[index]?.list || [];
+
+          subAnswer.forEach((id) => {
+            const option = currentSubOptions.find(
+              (opt) => opt.id.toString() === id.toString(),
+            );
+            if (option && option.xx) {
+              subOptionLabels.push(option.xx);
+            }
+          });
+        }
+
+        if (subOptionLabels.length > 0) {
+          answerText += `(${index + 1})${subOptionLabels.join(',')} `;
+        }
+      });
+
+      return answerText.trim();
+    }
+
+    // 处理普通选择题
+    if (!options || options.length === 0) return '';
+
+    const answerIds = Array.isArray(question.answer)
+      ? Array.isArray(question.answer[0])
+        ? question.answer[0]
+        : question.answer
+      : [question.answer];
+
+    const answerLabels = answerIds.map((id) => {
+      const option = options.find((opt) => opt.id.toString() === id.toString());
+      return option ? option.xx : '';
+    });
+
+    return answerLabels.join(', ');
   }
 
   /**
@@ -382,29 +418,50 @@ export class ExportService {
   }
 
   /**
-   * 创建图片Run对象，保持图片宽高比
+   * 创建图片Run对象，保持图片原始宽高比
    * @param imageBuffer 图片数据
    * @param url 图片URL (用于获取类型)
    * @param maxWidth 最大宽度
    * @returns ImageRun对象
    */
-  private createImageRun(
+  private async createImageRun(
     imageBuffer: Buffer,
     url: string,
     maxWidth: number,
-  ): ImageRun {
-    // 需要同时设置width和height以满足类型要求
-    // 使用一个自动缩放的比例，让大多数图片保持合理的宽高比
-    const options = {
-      data: imageBuffer,
-      transformation: {
-        width: maxWidth,
-        height: Math.round(maxWidth * 0.6), // 使用黄金比例近似值，避免拉伸
-      },
-      type: this.getImageType(url),
-    };
+  ): Promise<ImageRun> {
+    try {
+      // 使用sharp获取图片信息
+      const metadata = await sharp(imageBuffer).metadata();
+      const originalWidth = metadata.width || 800;
+      const originalHeight = metadata.height || 600;
 
-    return new ImageRun(options);
+      // 计算保持原始宽高比的高度
+      const scaledHeight = Math.round(
+        (maxWidth / originalWidth) * originalHeight,
+      );
+
+      const options = {
+        data: imageBuffer,
+        transformation: {
+          width: maxWidth,
+          height: scaledHeight,
+        },
+        type: this.getImageType(url),
+      };
+
+      return new ImageRun(options);
+    } catch (error) {
+      console.error(`处理图片失败: ${url}`, error);
+      // 如果处理失败，使用默认宽高比
+      return new ImageRun({
+        data: imageBuffer,
+        transformation: {
+          width: maxWidth,
+          height: Math.round(maxWidth * 0.75), // 默认4:3比例
+        },
+        type: this.getImageType(url),
+      });
+    }
   }
 
   /**
@@ -452,8 +509,8 @@ export class ExportService {
             content.push(
               new Paragraph({
                 children: [
-                  // 只指定最大宽度，保持原始宽高比
-                  this.createImageRun(imageBuffer, imageUrl, 450),
+                  // 现在是异步方法
+                  await this.createImageRun(imageBuffer, imageUrl, 450),
                 ],
                 alignment: AlignmentType.CENTER,
               }),
@@ -478,12 +535,17 @@ export class ExportService {
       const { text: formattedOptions, imageUrls: optionImagesMap } =
         this.formatOptions(options, question.type, subOptions);
 
-      // 添加选项文本
-      content.push(
-        new Paragraph({
-          text: formattedOptions,
-        }),
-      );
+      // 添加选项文本，为每一行创建一个新段落
+      const optionLines = formattedOptions.split('\n');
+      for (const line of optionLines) {
+        if (line.trim()) {
+          content.push(
+            new Paragraph({
+              text: line,
+            }),
+          );
+        }
+      }
 
       // 添加选项中的图片
       if (optionImagesMap.size > 0) {
@@ -503,7 +565,7 @@ export class ExportService {
               new Paragraph({
                 children: [
                   // 只指定最大宽度，保持原始宽高比
-                  this.createImageRun(imageBuffer, imageUrl, 350),
+                  await this.createImageRun(imageBuffer, imageUrl, 350),
                 ],
                 alignment: AlignmentType.CENTER,
               }),
