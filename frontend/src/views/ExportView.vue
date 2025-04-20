@@ -113,8 +113,8 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="export-view-wrapper" :class="{ loading: isLoading }">
-        <div class="export-view-title">
+    <div class="page-export" :class="{ loading: isLoading }">
+        <div class="page-container-title">
             <h1>导出题目</h1>
             <p>将题目导出为Word文档，方便离线学习和打印</p>
         </div>
@@ -199,14 +199,13 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
-.export-view-wrapper {
-    --page-container-margin-vertical: 30px;
-    --page-container-margin-horizon: 50px;
+.page-export {
     display: flex;
     flex-direction: column;
-    padding: var(--page-container-margin-vertical) var(--page-container-margin-horizon);
+    padding: 1.5rem;
     height: 100%;
     position: relative;
+    overflow-y: auto;
 
     @keyframes loading {
         from {
@@ -220,20 +219,18 @@ onMounted(() => {
     &.loading {
         pointer-events: none;
 
-        .export-view-title,
+        .page-container-title,
         .export-view-form {
             opacity: 0.5;
             filter: grayscale(1);
         }
     }
 
-    .export-view-title {
-        margin-bottom: 2rem;
-
+    .page-container-title {
         h1 {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+            font-size: inherit;
+            font-weight: inherit;
+            margin: 0;
         }
 
         p {
@@ -246,7 +243,7 @@ onMounted(() => {
         display: flex;
         flex-direction: column;
         gap: 2rem;
-        max-width: 800px;
+        margin: 0 1rem;
 
         .export-view-section {
             h2 {
@@ -262,13 +259,8 @@ onMounted(() => {
                 align-items: baseline;
                 margin-bottom: 1.25rem;
 
-                @media (max-width: 768px) {
-                    flex-direction: column;
-                    gap: 0.5rem;
-                }
-
                 label {
-                    flex: 0 0 120px;
+                    flex: 0 0 80px;
                     font-weight: 500;
                 }
 
