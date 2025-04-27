@@ -40,10 +40,11 @@ const openLoginCard = () => {
             </div>
         </div>
         <div class="page-guide-content">
-            <div class="page-guide-content__subtitle">船政上什么课？实习什么时候？选修课有什么？其它三个学校怎么样？……</div>
+            <div class="page-guide-content__subtitle">船政上什么课？实习什么时候？选修课有什么？……</div>
             <div class="page-guide-content__title">
-                <b>船政FAQ页</b>大概将于4月26日前上线<br />
-                <div class="tips">再拖几天……！但是导出功能有了啊。</div>
+                <b>船政FAQ页</b>大概将于5月3日前上线<br />
+                <div class="tips">继续再拖几天……！另外题库大部分新增的题都比较相似哦</div>
+                <div class="tips">转轨考主要是考过了就行，不会拿转轨成绩分班或者排名</div>
             </div>
         </div>
         <div class="page-guide-desc">
