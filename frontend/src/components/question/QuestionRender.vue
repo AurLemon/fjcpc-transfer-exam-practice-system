@@ -222,56 +222,54 @@ const getQuestions = async (params?: any, callback?: any) => {
         try {
             isLoadingWrongQuestions.value = true
 
-            if (!wrongQuestionPids.value.length || params?.reload) {
-                const wrongItems = await userStore.getFolderContent('wrong')
+            const wrongItems = await userStore.getFolderContent('wrong')
 
-                let filteredItems = wrongItems
-                if (wrongSubject.value !== -1) {
-                    filteredItems = wrongItems.filter((item) => item.course === wrongSubject.value)
-                }
+            let filteredItems = wrongItems
+            if (wrongSubject.value !== -1) {
+                filteredItems = wrongItems.filter((item) => item.course === wrongSubject.value)
+            }
 
-                if (userSetting.value.subject !== -1) {
-                    filteredItems = filteredItems.filter((item) => item.subject === userSetting.value.subject)
-                }
+            if (userSetting.value.subject !== -1) {
+                filteredItems = filteredItems.filter((item) => item.subject === userSetting.value.subject)
+            }
 
-                if (userSetting.value.type !== -1) {
-                    filteredItems = filteredItems.filter((item) => item.type === userSetting.value.type)
-                }
+            if (userSetting.value.type !== -1) {
+                filteredItems = filteredItems.filter((item) => item.type === userSetting.value.type)
+            }
 
-                if (filteredItems.length === 0) {
-                    notifyStore.addMessage('failed', '没有找到符合条件的错题记录')
-                    questions.value = []
-                    sequence.value = []
-                    questionsInfo.value.total_questions = 0
-                    isLoadQuestion.value = false
-                    isLoadingWrongQuestions.value = false
-                    return
-                }
+            if (filteredItems.length === 0) {
+                notifyStore.addMessage('failed', '没有找到符合条件的错题记录')
+                questions.value = []
+                sequence.value = []
+                questionsInfo.value.total_questions = 0
+                isLoadQuestion.value = false
+                isLoadingWrongQuestions.value = false
+                return
+            }
 
-                if (userSetting.value.sort_column === 'wrong_time') {
-                    filteredItems.sort((a, b) => {
-                        const timeA = dayjs(a.time || 0)
-                        const timeB = dayjs(b.time || 0)
-                        return userSetting.value.order === 'asc' ? timeA.diff(timeB) : timeB.diff(timeA)
-                    })
-                } else if (userSetting.value.sort_column === 'pid') {
-                    filteredItems.sort((a, b) => {
-                        const pidA = parseInt(a.pid, 10) || 0
-                        const pidB = parseInt(b.pid, 10) || 0
-                        return userSetting.value.order === 'asc' ? pidA - pidB : pidB - pidA
-                    })
-                }
+            if (userSetting.value.sort_column === 'wrong_time') {
+                filteredItems.sort((a, b) => {
+                    const timeA = dayjs(a.time || 0)
+                    const timeB = dayjs(b.time || 0)
+                    return userSetting.value.order === 'asc' ? timeA.diff(timeB) : timeB.diff(timeA)
+                })
+            } else if (userSetting.value.sort_column === 'pid') {
+                filteredItems.sort((a, b) => {
+                    const pidA = parseInt(a.pid, 10) || 0
+                    const pidB = parseInt(b.pid, 10) || 0
+                    return userSetting.value.order === 'asc' ? pidA - pidB : pidB - pidA
+                })
+            }
 
-                wrongQuestionPids.value = filteredItems.map((item) => item.pid)
-                sequence.value = wrongQuestionPids.value
-                questionsInfo.value = {
-                    course: wrongSubject.value,
-                    subject: userSetting.value.subject,
-                    type: userSetting.value.type,
-                    order: userSetting.value.order,
-                    sort_column: userSetting.value.sort_column,
-                    total_questions: wrongQuestionPids.value.length
-                }
+            wrongQuestionPids.value = filteredItems.map((item) => item.pid)
+            sequence.value = wrongQuestionPids.value
+            questionsInfo.value = {
+                course: wrongSubject.value,
+                subject: userSetting.value.subject,
+                type: userSetting.value.type,
+                order: userSetting.value.order,
+                sort_column: userSetting.value.sort_column,
+                total_questions: wrongQuestionPids.value.length
             }
 
             if (params?.index !== undefined) {
