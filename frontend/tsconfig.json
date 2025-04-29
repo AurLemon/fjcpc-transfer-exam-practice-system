@@ -1,16 +1,20 @@
 {
-    "files": [],
-    "compilerOptions": {
-        "types": [
-            "node"
-        ]
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
     },
-    "references": [
-        {
-            "path": "./tsconfig.node.json"
-        },
-        {
-            "path": "./tsconfig.app.json"
-        }
-    ]
+    "types": ["vite/client"],
+    "composite": true,
+    "tsBuildInfoFile": "./node_modules/.tsbuildinfo"
+  },
+  "include": [
+    "env.d.ts",
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue"
+  ],
+  "exclude": ["node_modules", "dist"]
 }

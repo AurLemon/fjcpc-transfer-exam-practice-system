@@ -7,36 +7,36 @@ import VueDevTools from 'vite-plugin-vue-devtools'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
 export default defineConfig({
-    server: {
-        proxy: {
-            '/api': {
-                target: 'http://localhost:3000',
-                changeOrigin: true
-            }
-        }
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
     },
-    css: {
-        preprocessorOptions: {
-            scss: {
-                api: 'modern-compiler' // or "modern"
-            }
-        }
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: 'modern-compiler', // or "modern"
+      },
     },
-    plugins: [
-        vue(),
-        vueJsx(),
-        VueDevTools(),
-        nodePolyfills({
-            protocolImports: true
-        })
-    ],
-    resolve: {
-        alias: {
-            '@': fileURLToPath(new URL('./src', import.meta.url))
-        }
+  },
+  plugins: [
+    vue(),
+    vueJsx(),
+    VueDevTools(),
+    nodePolyfills({
+      protocolImports: true,
+    }),
+  ],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
-    build: {
-        outDir: '../public',
-        emptyOutDir: true
-    }
+  },
+  build: {
+    outDir: '../public',
+    emptyOutDir: true,
+  },
 })

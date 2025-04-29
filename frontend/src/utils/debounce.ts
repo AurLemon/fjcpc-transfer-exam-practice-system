@@ -15,16 +15,19 @@
  *
  * window.addEventListener('resize', debouncedFunc);
  */
-export function debounce<T extends (...args: any[]) => void>(callback: T, delay: number): (...args: Parameters<T>) => void {
-    let timeoutId: ReturnType<typeof setTimeout> | null = null
+export function debounce<T extends (...args: any[]) => void>(
+  callback: T,
+  delay: number,
+): (...args: Parameters<T>) => void {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null
 
-    return function (this: any, ...args: Parameters<T>) {
-        if (timeoutId !== null) {
-            clearTimeout(timeoutId)
-        }
-
-        timeoutId = setTimeout(() => {
-            callback.apply(this, args)
-        }, delay)
+  return function (this: any, ...args: Parameters<T>) {
+    if (timeoutId !== null) {
+      clearTimeout(timeoutId)
     }
+
+    timeoutId = setTimeout(() => {
+      callback.apply(this, args)
+    }, delay)
+  }
 }

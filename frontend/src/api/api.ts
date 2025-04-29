@@ -5,26 +5,26 @@ import type { AxiosResponse } from 'axios'
 
 // 定义请求参数的类型
 interface Params {
-    [key: string]: any
+  [key: string]: any
 }
 
 // 定义请求数据的类型
 interface Data {
-    [key: string]: any
+  [key: string]: any
 }
 
 // 定义 Axios 配置类型
 interface AxiosConfig {
-    headers?: { [key: string]: string }
-    params?: Params
+  headers?: { [key: string]: string }
+  params?: Params
 }
 
 // 创建 Axios 实例
 const apiClient = axios.create({
-    baseURL: import.meta.env.VITE_BASE_API,
-    headers: {
-        'Content-Type': 'application/json'
-    }
+  baseURL: import.meta.env.VITE_BASE_API,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 })
 
 // 定义泛型类型的 API 响应
@@ -37,8 +37,12 @@ type ApiResponse<T> = Promise<AxiosResponse<T>>
  * @param config - 可选的自定义配置
  * @returns 服务器响应的 Promise 对象
  */
-export const get = <T>(url: string, params?: Params, config?: AxiosConfig): ApiResponse<T> => {
-    return apiClient.get<T>(url, { params, ...config })
+export const get = <T>(
+  url: string,
+  params?: Params,
+  config?: AxiosConfig,
+): ApiResponse<T> => {
+  return apiClient.get<T>(url, { params, ...config })
 }
 
 /**
@@ -48,8 +52,12 @@ export const get = <T>(url: string, params?: Params, config?: AxiosConfig): ApiR
  * @param config - 可选的自定义配置
  * @returns 服务器响应的 Promise 对象
  */
-export const post = <T>(url: string, data: Data, config?: AxiosConfig): ApiResponse<T> => {
-    return apiClient.post<T>(url, data, config)
+export const post = <T>(
+  url: string,
+  data: Data,
+  config?: AxiosConfig,
+): ApiResponse<T> => {
+  return apiClient.post<T>(url, data, config)
 }
 
 /**
@@ -59,8 +67,12 @@ export const post = <T>(url: string, data: Data, config?: AxiosConfig): ApiRespo
  * @param config - 可选的自定义配置
  * @returns 服务器响应的 Promise 对象
  */
-export const put = <T>(url: string, data: Data, config?: AxiosConfig): ApiResponse<T> => {
-    return apiClient.put<T>(url, data, config)
+export const put = <T>(
+  url: string,
+  data: Data,
+  config?: AxiosConfig,
+): ApiResponse<T> => {
+  return apiClient.put<T>(url, data, config)
 }
 
 /**
@@ -70,8 +82,12 @@ export const put = <T>(url: string, data: Data, config?: AxiosConfig): ApiRespon
  * @param config - 可选的自定义配置
  * @returns 服务器响应的 Promise 对象
  */
-export const del = <T>(url: string, params?: Params, config?: AxiosConfig): ApiResponse<T> => {
-    return apiClient.delete<T>(url, { params, ...config })
+export const del = <T>(
+  url: string,
+  params?: Params,
+  config?: AxiosConfig,
+): ApiResponse<T> => {
+  return apiClient.delete<T>(url, { params, ...config })
 }
 
 /**
@@ -89,11 +105,11 @@ export const del = <T>(url: string, params?: Params, config?: AxiosConfig): ApiR
  * }
  */
 export const getPublicKey = async (): Promise<string | null> => {
-    try {
-        const keyResponse: any = await get('/auth/login')
-        const publicKey = keyResponse.data.data.public_key
-        return publicKey
-    } catch (err) {
-        return null
-    }
+  try {
+    const keyResponse: any = await get('/auth/login')
+    const publicKey = keyResponse.data.data.public_key
+    return publicKey
+  } catch (err) {
+    return null
+  }
 }
