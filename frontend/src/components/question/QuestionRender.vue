@@ -86,7 +86,7 @@ const lastUserSetting = ref<UserSetting>({
   order: 'asc',
 })
 
-const wrongSubject = ref<number | null>(1)
+const wrongSubject = ref<number | null>(null)
 const isLoadingWrongQuestions = ref<boolean>(false)
 const wrongQuestionPids = ref<string[]>([])
 
@@ -628,6 +628,8 @@ watch(
   (newVal, oldVal) => {
     if (oldVal === 3 && newVal !== 3) {
       wrongSubject.value = null
+    } else {
+      wrongSubject.value = !wrongSubject.value ? -1 : wrongSubject.value
     }
   }
 )
@@ -1238,7 +1240,7 @@ onBeforeUnmount(() => {
           v-model="userSetting.subject"
           v-if="
             (userSetting.course !== 3 && !questionStore.isGetQuestionInfo) ||
-            !(wrongSubject === -1)
+            wrongSubject !== -1
           "
           content="科目"
           v-tippy="{ appendTo: 'parent' }"
