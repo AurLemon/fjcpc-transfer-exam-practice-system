@@ -71,8 +71,6 @@ const goToQuestion = (pid: string) => {
   router.push(`/view/${pid}`)
 }
 
-// 移除 handleKeydown 和 handleClickOutside，因为我们不再需要关闭搜索结果面板
-
 const nextPage = () => {
   if (searchParams.page < totalPages.value) {
     searchParams.page++

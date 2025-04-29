@@ -29,26 +29,41 @@ const router = createRouter({
       path: '/search',
       name: 'search',
       component: () => import('../views/SearchView.vue'),
+      meta: {
+        KeepAlive: true
+      },
     },
     {
       path: '/test',
       name: 'test',
       component: () => import('../views/TestView.vue'),
+      meta: {
+        KeepAlive: true
+      },
     },
     {
       path: '/star',
       name: 'star',
       component: () => import('../views/StarView.vue'),
+      meta: {
+        KeepAlive: true
+      },
     },
     {
       path: '/stat',
       name: 'stat',
       component: () => import('../views/StatView.vue'),
+      meta: {
+        KeepAlive: true
+      },
     },
     {
       path: '/export',
       name: 'export',
       component: () => import('../views/ExportView.vue'),
+      meta: {
+        KeepAlive: true
+      },
     },
     {
       path: '/advanced',

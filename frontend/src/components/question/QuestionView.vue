@@ -1034,7 +1034,7 @@ onBeforeUnmount(() => {
             <span class="material-icons">keyboard_arrow_right</span>
           </div>
         </div>
-        <div class="direct-mode-bar" v-else>
+        <div class="question-render-info__status direct-mode-bar" v-else>
           <div class="direct-mode-info">
             <span class="material-icons">info</span>
             <span>当前正在查看单题模式</span>
@@ -2003,6 +2003,7 @@ onBeforeUnmount(() => {
 
     .question-render-tools__options {
       display: flex;
+      justify-content: center;
       align-items: center;
       flex-wrap: wrap;
       gap: 0.25rem;
