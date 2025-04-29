@@ -52,7 +52,7 @@ const filteredSubjects = computed(() => {
 const getExportConfig = async () => {
   isLoading.value = true
   try {
-    const response = await get('/export/config')
+    const response: any = await get('/export/config')
     config.value = response.data.data
   } catch (error) {
     notifyStore.addMessage('failed', '获取导出配置失败，请稍后再试')

@@ -61,7 +61,7 @@ interface QuestionsResponse {
   questions: Question[]
   offset_pid: string
   stat: {
-    course: number
+    course: number | null
     subject: number
     type: number
     order: string
@@ -86,7 +86,7 @@ const lastUserSetting = ref<UserSetting>({
   order: 'asc',
 })
 
-const wrongSubject = ref<number>(1)
+const wrongSubject = ref<number | null>(1)
 const isLoadingWrongQuestions = ref<boolean>(false)
 const wrongQuestionPids = ref<string[]>([])
 
@@ -198,7 +198,8 @@ const updateBookmark = async () => {
   isMark.value = !isMark.value
 }
 
-const renderQuestionCourse = (course: number) => {
+const renderQuestionCourse = (course: number | null) => {
+  if (!course) return
   const result = questionStore.renderQuestionCourse(course)
   return result
 }
@@ -309,7 +310,7 @@ const getQuestions = async (params?: any, callback?: any) => {
         const requestedPid = wrongQuestionPids.value[requestedIndex - 1]
 
         try {
-          const response = await get(`/question/${requestedPid}`)
+          const response: any = await get(`/question/${requestedPid}`)
           if (response.data.code === 200) {
             const question = {
               ...response.data.data,
@@ -361,7 +362,7 @@ const getQuestions = async (params?: any, callback?: any) => {
         const wrongQuestions = await Promise.all(
           firstBatchPids.map(async (pid, index) => {
             try {
-              const response = await get(`/question/${pid}`)
+              const response: any = await get(`/question/${pid}`)
               if (response.data.code === 200) {
                 return {
                   ...response.data.data,
@@ -466,7 +467,7 @@ const loadWrongQuestionRange = async (startIndex: number, endIndex: number) => {
   const newQuestions = await Promise.all(
     batchPids.map(async (pid, index) => {
       try {
-        const response = await get(`/question/${pid}`)
+        const response: any = await get(`/question/${pid}`)
         if (response.data.code === 200) {
           return {
             ...response.data.data,
@@ -585,7 +586,7 @@ const loadMoreWrongQuestions = async (startIndex: number) => {
   const newQuestions = await Promise.all(
     batchPids.map(async (pid, index) => {
       try {
-        const response = await get(`/question/${pid}`)
+        const response: any = await get(`/question/${pid}`)
         if (response.data.code === 200) {
           return {
             ...response.data.data,
@@ -622,11 +623,14 @@ watch(wrongSubject, () => {
   }
 })
 
-watch(userSetting.course, (newVal, oldVal) => {
-  if (oldVal === 3 && newVal !== 3) {
-    wrongSubject.value = null
+watch(
+  () => userSetting.value.course,
+  (newVal, oldVal) => {
+    if (oldVal === 3 && newVal !== 3) {
+      wrongSubject.value = null
+    }
   }
-})
+)
 
 const nextQuestion = () => {
   resetQuestionComplete()
