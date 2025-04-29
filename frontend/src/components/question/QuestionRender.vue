@@ -222,81 +222,133 @@ const getQuestions = async (params?: any, callback?: any) => {
         try {
             isLoadingWrongQuestions.value = true
 
-            const wrongItems = await userStore.getFolderContent('wrong')
+            if (!wrongQuestionPids.value.length || params?.reload) {
+                const wrongItems = await userStore.getFolderContent('wrong')
 
-            let filteredItems = wrongItems
-            if (wrongSubject.value !== -1) {
-                filteredItems = wrongItems.filter((item) => item.course === wrongSubject.value)
+                let filteredItems = wrongItems
+                if (wrongSubject.value !== -1) {
+                    filteredItems = wrongItems.filter((item) => item.course === wrongSubject.value)
+                }
+
+                if (userSetting.value.subject !== -1) {
+                    filteredItems = filteredItems.filter((item) => item.subject === userSetting.value.subject)
+                }
+
+                if (userSetting.value.type !== -1) {
+                    filteredItems = filteredItems.filter((item) => item.type === userSetting.value.type)
+                }
+
+                if (filteredItems.length === 0) {
+                    notifyStore.addMessage('failed', '没有找到符合条件的错题记录')
+                    questions.value = []
+                    sequence.value = []
+                    questionsInfo.value.total_questions = 0
+                    isLoadQuestion.value = false
+                    isLoadingWrongQuestions.value = false
+                    return
+                }
+
+                if (userSetting.value.sort_column === 'wrong_time') {
+                    filteredItems.sort((a, b) => {
+                        const timeA = dayjs(a.time || 0)
+                        const timeB = dayjs(b.time || 0)
+                        return userSetting.value.order === 'asc' ? timeA.diff(timeB) : timeB.diff(timeA)
+                    })
+                } else if (userSetting.value.sort_column === 'pid') {
+                    filteredItems.sort((a, b) => {
+                        const pidA = parseInt(a.pid, 10) || 0
+                        const pidB = parseInt(b.pid, 10) || 0
+                        return userSetting.value.order === 'asc' ? pidA - pidB : pidB - pidA
+                    })
+                }
+
+                wrongQuestionPids.value = filteredItems.map((item) => item.pid)
+                sequence.value = wrongQuestionPids.value
+                questionsInfo.value = {
+                    course: wrongSubject.value,
+                    subject: userSetting.value.subject,
+                    type: userSetting.value.type,
+                    order: userSetting.value.order,
+                    sort_column: userSetting.value.sort_column,
+                    total_questions: wrongQuestionPids.value.length
+                }
             }
 
-            if (userSetting.value.subject !== -1) {
-                filteredItems = filteredItems.filter((item) => item.subject === userSetting.value.subject)
-            }
+            if (params?.index !== undefined) {
+                const requestedIndex = params.index
 
-            if (userSetting.value.type !== -1) {
-                filteredItems = filteredItems.filter((item) => item.type === userSetting.value.type)
-            }
+                if (requestedIndex <= 0 || requestedIndex > wrongQuestionPids.value.length) {
+                    notifyStore.addMessage('failed', `索引超出范围：${requestedIndex}，最大索引：${wrongQuestionPids.value.length}`)
+                    isLoadQuestion.value = false
+                    isLoadingWrongQuestions.value = false
+                    return
+                }
 
-            if (filteredItems.length === 0) {
-                notifyStore.addMessage('failed', '没有找到符合条件的错题记录')
-                questions.value = []
-                sequence.value = []
-                questionsInfo.value.total_questions = 0
+                const requestedPid = wrongQuestionPids.value[requestedIndex - 1]
+
+                try {
+                    const response = await get(`/question/${requestedPid}`)
+                    if (response.data.code === 200) {
+                        const question = {
+                            ...response.data.data,
+                            index: requestedIndex
+                        }
+
+                        const existingQuestionIndex = questions.value.findIndex((q) => q.pid === requestedPid)
+                        if (existingQuestionIndex !== -1) {
+                            questions.value[existingQuestionIndex] = question
+                        } else {
+                            questions.value.push(question)
+                        }
+
+                        nextPid.value = requestedIndex < wrongQuestionPids.value.length ? wrongQuestionPids.value[requestedIndex] : null
+                        prevPid.value = requestedIndex > 1 ? wrongQuestionPids.value[requestedIndex - 2] : null
+
+                        const preloadCount = 2
+                        const startIdx = Math.max(0, requestedIndex - preloadCount - 1)
+                        const endIdx = Math.min(wrongQuestionPids.value.length, requestedIndex + preloadCount)
+
+                        await loadWrongQuestionRange(startIdx, endIdx)
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch question ${requestedPid}:`, error)
+                    notifyStore.addMessage('failed', `加载题目失败：${error}`)
+                }
+
                 isLoadQuestion.value = false
                 isLoadingWrongQuestions.value = false
+
+                if (callback) {
+                    callback()
+                }
+
                 return
-            }
-
-            if (userSetting.value.sort_column === 'wrong_time') {
-                filteredItems.sort((a, b) => {
-                    const timeA = dayjs(a.time || 0)
-                    const timeB = dayjs(b.time || 0)
-                    return userSetting.value.order === 'asc' ? timeA.diff(timeB) : timeB.diff(timeA)
-                })
-            } else if (userSetting.value.sort_column === 'pid') {
-                filteredItems.sort((a, b) => {
-                    const pidA = parseInt(a.pid, 10) || 0
-                    const pidB = parseInt(b.pid, 10) || 0
-                    return userSetting.value.order === 'asc' ? pidA - pidB : pidB - pidA
-                })
-            }
-
-            wrongQuestionPids.value = filteredItems.map((item) => item.pid)
-
-            const firstBatchPids = wrongQuestionPids.value.slice(0, 10)
-            const wrongQuestions = await Promise.all(
-                firstBatchPids.map(async (pid, index) => {
-                    try {
-                        const response = await get(`/question/${pid}`)
-                        if (response.data.code === 200) {
-                            return {
-                                ...response.data.data,
-                                index: index + 1
+            } else if (!questions.value.length) {
+                const firstBatchPids = wrongQuestionPids.value.slice(0, 10)
+                const wrongQuestions = await Promise.all(
+                    firstBatchPids.map(async (pid, index) => {
+                        try {
+                            const response = await get(`/question/${pid}`)
+                            if (response.data.code === 200) {
+                                return {
+                                    ...response.data.data,
+                                    index: index + 1
+                                }
                             }
+                            return null
+                        } catch (error) {
+                            console.error(`Failed to fetch question ${pid}:`, error)
+                            return null
                         }
-                        return null
-                    } catch (error) {
-                        console.error(`Failed to fetch question ${pid}:`, error)
-                        return null
-                    }
-                })
-            )
+                    })
+                )
 
-            const validQuestions = wrongQuestions.filter((q) => q !== null)
+                const validQuestions = wrongQuestions.filter((q) => q !== null)
+                questions.value = validQuestions
 
-            questions.value = validQuestions
-            sequence.value = wrongQuestionPids.value
-            questionsInfo.value = {
-                course: wrongSubject.value,
-                subject: userSetting.value.subject,
-                type: userSetting.value.type,
-                order: userSetting.value.order,
-                sort_column: userSetting.value.sort_column,
-                total_questions: wrongQuestionPids.value.length
+                nextPid.value = wrongQuestionPids.value.length > 10 ? wrongQuestionPids.value[10] : null
+                prevPid.value = null
             }
-
-            nextPid.value = wrongQuestionPids.value.length > 10 ? wrongQuestionPids.value[10] : null
-            prevPid.value = null
 
             isLoadQuestion.value = false
             isLoadingWrongQuestions.value = false
@@ -368,6 +420,43 @@ const getQuestions = async (params?: any, callback?: any) => {
     } finally {
         isLoadQuestion.value = false
     }
+}
+
+const loadWrongQuestionRange = async (startIndex: number, endIndex: number) => {
+    if (userSetting.value.course !== 3 || !wrongQuestionPids.value.length) return
+
+    const batchPids = wrongQuestionPids.value.slice(startIndex, endIndex)
+
+    const newQuestions = await Promise.all(
+        batchPids.map(async (pid, index) => {
+            try {
+                const response = await get(`/question/${pid}`)
+                if (response.data.code === 200) {
+                    return {
+                        ...response.data.data,
+                        index: startIndex + index + 1
+                    }
+                }
+                return null
+            } catch (error) {
+                console.error(`Failed to fetch question ${pid}:`, error)
+                return null
+            }
+        })
+    )
+
+    const validQuestions = newQuestions.filter((q) => q !== null)
+
+    validQuestions.forEach((newQuestion) => {
+        const existingIndex = questions.value.findIndex((q) => q.pid === newQuestion.pid)
+        if (existingIndex !== -1) {
+            questions.value[existingIndex] = newQuestion
+        } else {
+            questions.value.push(newQuestion)
+        }
+    })
+
+    questions.value.sort((a, b) => a.index - b.index)
 }
 
 const skipDoneQuestion = async () => {
@@ -546,23 +635,36 @@ const toQuestionByIndex = (indexNumber: number) => {
     } else {
         isLoadQuestion.value = true
 
-        Promise.all([
+        if (userSetting.value.course === 3) {
             getQuestions({
                 index: indexNumber
             })
                 .then(() => {
                     currentId.value = indexNumber
-                    return getQuestions({
-                        next_pid: nextPid.value
-                    })
-                })
-                .then(() => {
-                    currentId.value = indexNumber
                     isSheetsActive.value = false
                 })
-        ]).finally(() => {
-            isLoadQuestion.value = false
-        })
+                .finally(() => {
+                    isLoadQuestion.value = false
+                })
+        } else {
+            Promise.all([
+                getQuestions({
+                    index: indexNumber
+                })
+                    .then(() => {
+                        currentId.value = indexNumber
+                        return getQuestions({
+                            next_pid: nextPid.value
+                        })
+                    })
+                    .then(() => {
+                        currentId.value = indexNumber
+                        isSheetsActive.value = false
+                    })
+            ]).finally(() => {
+                isLoadQuestion.value = false
+            })
+        }
     }
 }
 
@@ -922,7 +1024,7 @@ onBeforeUnmount(() => {
                 <select
                     class="question-render-tools__option"
                     v-model="userSetting.subject"
-                    v-if="!questionStore.isGetQuestionInfo"
+                    v-if="(userSetting.course !== 3 && !questionStore.isGetQuestionInfo) || !(wrongSubject === -1)"
                     content="科目"
                     v-tippy="{ appendTo: 'parent' }"
                 >
