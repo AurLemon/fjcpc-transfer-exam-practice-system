@@ -217,16 +217,28 @@ const addQuestion = (newQuestions: any[]) => {
 
 const getQuestions = async (params?: any, callback?: any) => {
     isLoadQuestion.value = true
-    
+
     if (userSetting.value.course === 3) {
         try {
             isLoadingWrongQuestions.value = true
-            
+
             const wrongItems = await userStore.getFolderContent('wrong')
-            const filteredItems = wrongItems.filter(item => item.course === wrongSubject.value)
-            
+
+            let filteredItems = wrongItems
+            if (wrongSubject.value !== -1) {
+                filteredItems = wrongItems.filter((item) => item.course === wrongSubject.value)
+            }
+
+            if (userSetting.value.subject !== -1) {
+                filteredItems = filteredItems.filter((item) => item.subject === userSetting.value.subject)
+            }
+
+            if (userSetting.value.type !== -1) {
+                filteredItems = filteredItems.filter((item) => item.type === userSetting.value.type)
+            }
+
             if (filteredItems.length === 0) {
-                notifyStore.addMessage('failed', '没有找到错题记录，请先做题并收藏错题')
+                notifyStore.addMessage('failed', '没有找到符合条件的错题记录')
                 questions.value = []
                 sequence.value = []
                 questionsInfo.value.total_questions = 0
@@ -234,9 +246,23 @@ const getQuestions = async (params?: any, callback?: any) => {
                 isLoadingWrongQuestions.value = false
                 return
             }
-            
-            wrongQuestionPids.value = filteredItems.map(item => item.pid)
-            
+
+            if (userSetting.value.sort_column === 'wrong_time') {
+                filteredItems.sort((a, b) => {
+                    const timeA = dayjs(a.time || 0)
+                    const timeB = dayjs(b.time || 0)
+                    return userSetting.value.order === 'asc' ? timeA.diff(timeB) : timeB.diff(timeA)
+                })
+            } else if (userSetting.value.sort_column === 'pid') {
+                filteredItems.sort((a, b) => {
+                    const pidA = parseInt(a.pid, 10) || 0
+                    const pidB = parseInt(b.pid, 10) || 0
+                    return userSetting.value.order === 'asc' ? pidA - pidB : pidB - pidA
+                })
+            }
+
+            wrongQuestionPids.value = filteredItems.map((item) => item.pid)
+
             const firstBatchPids = wrongQuestionPids.value.slice(0, 10)
             const wrongQuestions = await Promise.all(
                 firstBatchPids.map(async (pid, index) => {
@@ -255,26 +281,26 @@ const getQuestions = async (params?: any, callback?: any) => {
                     }
                 })
             )
-            
-            const validQuestions = wrongQuestions.filter(q => q !== null)
-            
+
+            const validQuestions = wrongQuestions.filter((q) => q !== null)
+
             questions.value = validQuestions
             sequence.value = wrongQuestionPids.value
             questionsInfo.value = {
                 course: wrongSubject.value,
-                subject: -1,
-                type: -1,
-                order: 'asc',
-                sort_column: 'pid',
+                subject: userSetting.value.subject,
+                type: userSetting.value.type,
+                order: userSetting.value.order,
+                sort_column: userSetting.value.sort_column,
                 total_questions: wrongQuestionPids.value.length
             }
-            
+
             nextPid.value = wrongQuestionPids.value.length > 10 ? wrongQuestionPids.value[10] : null
             prevPid.value = null
-            
+
             isLoadQuestion.value = false
             isLoadingWrongQuestions.value = false
-            
+
             if (callback) {
                 callback()
             }
@@ -412,13 +438,13 @@ const prevQuestion = () => {
 
 const loadMoreWrongQuestions = async (startIndex: number) => {
     if (userSetting.value.course !== 3 || !wrongQuestionPids.value.length) return
-    
+
     isLoadingWrongQuestions.value = true
-    
+
     const batchSize = 10
     const endIndex = Math.min(startIndex + batchSize, wrongQuestionPids.value.length)
     const batchPids = wrongQuestionPids.value.slice(startIndex, endIndex)
-    
+
     const newQuestions = await Promise.all(
         batchPids.map(async (pid, index) => {
             try {
@@ -436,14 +462,14 @@ const loadMoreWrongQuestions = async (startIndex: number) => {
             }
         })
     )
-    
-    const validQuestions = newQuestions.filter(q => q !== null)
-    
+
+    const validQuestions = newQuestions.filter((q) => q !== null)
+
     addQuestion(validQuestions)
-    
+
     nextPid.value = endIndex < wrongQuestionPids.value.length ? wrongQuestionPids.value[endIndex] : null
     prevPid.value = startIndex > 0 ? wrongQuestionPids.value[startIndex - 1] : null
-    
+
     isLoadingWrongQuestions.value = false
 }
 
@@ -452,6 +478,12 @@ watch(wrongSubject, () => {
         questions.value = []
         currentId.value = 1
         debouncedGetQuestions()
+    }
+})
+
+watch(userSetting.course, (newVal, oldVal) => {
+    if (oldVal === 3 && newVal !== 3) {
+        wrongSubject.value = null
     }
 })
 
@@ -464,17 +496,16 @@ const nextQuestion = () => {
         if (nextQuestion) {
             currentId.value = nextQuestion.index
         } else if (currentId.value < wrongQuestionPids.value.length) {
-            loadMoreWrongQuestions(questions.value.length)
-                .then(() => {
-                    const newNextQuestion = questions.value.filter((q) => q.index > currentId.value).sort((a, b) => a.index - b.index)[0]
-                    if (newNextQuestion) {
-                        currentId.value = newNextQuestion.index
-                    }
-                })
+            loadMoreWrongQuestions(questions.value.length).then(() => {
+                const newNextQuestion = questions.value.filter((q) => q.index > currentId.value).sort((a, b) => a.index - b.index)[0]
+                if (newNextQuestion) {
+                    currentId.value = newNextQuestion.index
+                }
+            })
         }
         return
     }
-    
+
     const nextQuestion = questions.value.filter((q) => q.index > currentId.value).sort((a, b) => a.index - b.index)[0]
 
     if (nextQuestion) {
@@ -511,23 +542,27 @@ watch(isSheetsActive, (newVal) => {
 const toQuestionByIndex = (indexNumber: number) => {
     if (questions.value.some((q) => q.index === indexNumber)) {
         currentId.value = indexNumber
+        isSheetsActive.value = false
     } else {
-        debouncedGetQuestions(
-            {
+        isLoadQuestion.value = true
+
+        Promise.all([
+            getQuestions({
                 index: indexNumber
-            },
-            () => {
-                currentId.value = indexNumber
-                debouncedGetQuestions(
-                    {
+            })
+                .then(() => {
+                    currentId.value = indexNumber
+                    return getQuestions({
                         next_pid: nextPid.value
-                    },
-                    () => {
-                        currentId.value = indexNumber
-                    }
-                )
-            }
-        )
+                    })
+                })
+                .then(() => {
+                    currentId.value = indexNumber
+                    isSheetsActive.value = false
+                })
+        ]).finally(() => {
+            isLoadQuestion.value = false
+        })
     }
 }
 
@@ -880,6 +915,7 @@ onBeforeUnmount(() => {
                     <option :value="3">错题</option>
                 </select>
                 <select v-if="userSetting.course === 3" v-model="wrongSubject">
+                    <option :value="-1">所有课程</option>
                     <option :value="1">文化课</option>
                     <option :value="2">专业课</option>
                 </select>
@@ -892,7 +928,7 @@ onBeforeUnmount(() => {
                 >
                     <option value="-1">所有科目</option>
                     <option
-                        v-for="subject in questionStore.questionInfo[userSetting.course === 1 ? 'cultural_lesson' : 'profession_lesson']"
+                        v-for="subject in questionStore.questionInfo[userSetting.course === 1 || wrongSubject === 1 ? 'cultural_lesson' : 'profession_lesson']"
                         :value="subject.subject"
                         :key="subject.subject"
                     >
@@ -908,7 +944,8 @@ onBeforeUnmount(() => {
                 </select>
                 <select class="question-render-tools__option" v-model="userSetting.sort_column" content="排序列" v-tippy="{ appendTo: 'parent' }">
                     <option value="pid">题目编号</option>
-                    <option value="crawl_count">出现概率</option>
+                    <option value="crawl_count" v-if="userSetting.course !== 3">出现概率</option>
+                    <option value="wrong_time" v-if="userSetting.course === 3">做错时间</option>
                 </select>
                 <select class="question-render-tools__option" v-model="userSetting.order" content="排序方式" v-tippy="{ appendTo: 'parent' }">
                     <option value="asc">升序</option>
