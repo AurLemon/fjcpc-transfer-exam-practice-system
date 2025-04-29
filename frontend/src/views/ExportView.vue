@@ -21,25 +21,21 @@ interface ExportConfig {
   subjects: Subject[]
 }
 
-// 导出设置
 const exportSettings = ref({
   count: 50,
   course: 2,
   subject: 1,
   includeImage: false,
-  questionType: -1, // 添加题目类型选择，默认为-1（全部题型）
+  questionType: -1,
 })
 
-// 配置数据
 const config = ref<ExportConfig>({
   courses: [],
   subjects: [],
 })
 
-// 加载状态
 const isLoading = ref<boolean>(false)
 
-// 根据选择的课程过滤科目
 const filteredSubjects = computed(() => {
   return config.value.subjects.filter(
     (subject) =>
@@ -48,7 +44,6 @@ const filteredSubjects = computed(() => {
   )
 })
 
-// 获取课程和科目配置
 const getExportConfig = async () => {
   isLoading.value = true
   try {
@@ -66,18 +61,15 @@ const exportQuestions = () => {
   isLoading.value = true
 
   try {
-    // 构建URL参数
     const params = new URLSearchParams()
     params.append('count', exportSettings.value.count.toString())
     params.append('course', exportSettings.value.course.toString())
     params.append('subject', exportSettings.value.subject.toString())
     params.append('includeImage', exportSettings.value.includeImage.toString())
-    params.append('questionType', exportSettings.value.questionType.toString()) // 添加题目类型参数
-
-    // 构建完整URL
+    params.append('questionType', exportSettings.value.questionType.toString())
+    
     const url = `/api/export/questions?${params.toString()}`
-
-    // 触发下载
+    
     window.location.href = url
 
     notifyStore.addMessage('success', '正在导出题目，请稍等...')
@@ -91,18 +83,16 @@ const exportQuestions = () => {
   }
 }
 
-// 重置表单
 const resetForm = () => {
   exportSettings.value = {
     count: 50,
     course: 2,
     subject: 1,
     includeImage: false,
-    questionType: -1, // 重置时也要设置题目类型为全部
+    questionType: -1,
   }
 }
 
-// 监听课程变化，重置科目选择
 watch(
   () => exportSettings.value.course,
   (newVal) => {
@@ -110,7 +100,6 @@ watch(
   },
 )
 
-// 组件挂载时获取配置
 onMounted(() => {
   getExportConfig()
 })
@@ -118,10 +107,7 @@ onMounted(() => {
 
 <template>
   <div class="page-export" :class="{ loading: isLoading }">
-    <div class="page-container-title">
-      <h1>导出题目</h1>
-      <p>将题目导出为Word文档，方便离线学习和打印</p>
-    </div>
+    <div class="page-container-title">导出题目</div>
 
     <div class="export-view-form">
       <div class="export-view-section">
@@ -269,19 +255,6 @@ onMounted(() => {
     .export-view-form {
       opacity: 0.5;
       filter: grayscale(1);
-    }
-  }
-
-  .page-container-title {
-    h1 {
-      font-size: inherit;
-      font-weight: inherit;
-      margin: 0;
-    }
-
-    p {
-      font-size: 14px;
-      color: var(--color-surface-4);
     }
   }
 
