@@ -2,6 +2,7 @@
 import { defineComponent } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useQuestionStore } from '@/stores/question'
+import { useRouter } from 'vue-router'
 
 interface StarQuestion {
   pid: string
@@ -15,6 +16,7 @@ export default defineComponent({
   name: 'StarView',
   data() {
     return {
+      router: null as any,
       showFolderItem: false,
       folder: [
         {
@@ -25,6 +27,9 @@ export default defineComponent({
       folderContent: [] as StarQuestion[],
       currentFolder: 'wrong',
     }
+  },
+  created() {
+    this.router = useRouter()
   },
   methods: {
     openFolder(folderName: string): void {
@@ -76,6 +81,9 @@ export default defineComponent({
       await userStore.deleteStar(pid)
       this.folderContent = await this.getFolderContent(folderName)
     },
+    viewQuestion(pid: string) {
+      this.router.push(`/view/${pid}`)
+    }
   },
 })
 </script>
@@ -124,6 +132,10 @@ export default defineComponent({
             </div>
           </div>
           <div class="page-star-item__tools">
+            <div class="page-star-item__tool" @click="viewQuestion(item.pid)">
+              <div class="material-icons">search</div>
+              <div class="text">查看</div>
+            </div>
             <div class="page-star-item__tool" @click="deleteStar(item.pid)">
               <div class="material-icons">delete</div>
               <div class="text">删除</div>

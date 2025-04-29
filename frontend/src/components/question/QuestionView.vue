@@ -1,5 +1,14 @@
 <script lang="ts" setup>
-import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import {
+  ref,
+  computed,
+  watch,
+  nextTick,
+  onMounted,
+  onBeforeUnmount,
+  onBeforeMount,
+} from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import dayjs from 'dayjs'
 import * as _ from 'lodash-es'
 
@@ -10,6 +19,12 @@ import { useUserStore } from '@/stores/user'
 import { useQuestionStore } from '@/stores/question'
 import { useNotifyStore } from '@/stores/notify'
 import { useCardStore } from '@/stores/card'
+
+const route = useRoute()
+const router = useRouter()
+
+const isDirectQuestionMode = ref(false)
+const directQuestion = ref<Question | null>(null)
 
 const userStore = useUserStore()
 const questionStore = useQuestionStore()
@@ -61,7 +76,7 @@ interface QuestionsResponse {
   questions: Question[]
   offset_pid: string
   stat: {
-    course: number
+    course: number | null
     subject: number
     type: number
     order: string
@@ -77,6 +92,10 @@ const userSetting = ref<UserSetting>({
   sort_column: 'pid',
   order: 'asc',
 })
+
+const wrongSubject = ref<number | null>(null)
+const isLoadingWrongQuestions = ref<boolean>(false)
+const wrongQuestionPids = ref<string[]>([])
 
 const lastUserSetting = ref<UserSetting>({
   course: 1,
@@ -176,7 +195,8 @@ if (
   saveRenderMode()
 }
 
-const renderQuestionCourse = (course: number) => {
+const renderQuestionCourse = (course: number | null) => {
+  if (!course) return
   const result = questionStore.renderQuestionCourse(course)
   return result
 }
@@ -203,8 +223,266 @@ const addQuestion = (newQuestions: any[]) => {
   questions.value.sort((a, b) => a.index - b.index)
 }
 
+const loadWrongQuestionRange = async (startIndex: number, endIndex: number) => {
+  if (userSetting.value.course !== 3 || !wrongQuestionPids.value.length) return
+
+  const batchPids = wrongQuestionPids.value.slice(startIndex, endIndex)
+
+  const newQuestions = await Promise.all(
+    batchPids.map(async (pid, index) => {
+      try {
+        const response: any = await get(`/question/${pid}`)
+        if (response.data.code === 200) {
+          return {
+            ...response.data.data,
+            index: startIndex + index + 1,
+          }
+        }
+        return null
+      } catch (error) {
+        console.error(`Failed to fetch question ${pid}:`, error)
+        return null
+      }
+    }),
+  )
+
+  const validQuestions = newQuestions.filter((q) => q !== null)
+
+  validQuestions.forEach((newQuestion) => {
+    const existingIndex = questions.value.findIndex(
+      (q) => q.pid === newQuestion.pid,
+    )
+    if (existingIndex !== -1) {
+      questions.value[existingIndex] = newQuestion
+    } else {
+      questions.value.push(newQuestion)
+    }
+  })
+
+  questions.value.sort((a, b) => a.index - b.index)
+}
+
+const loadMoreWrongQuestions = async (startIndex: number) => {
+  if (userSetting.value.course !== 3 || !wrongQuestionPids.value.length) return
+
+  isLoadingWrongQuestions.value = true
+
+  const batchSize = 10
+  const endIndex = Math.min(
+    startIndex + batchSize,
+    wrongQuestionPids.value.length,
+  )
+  const batchPids = wrongQuestionPids.value.slice(startIndex, endIndex)
+
+  const newQuestions = await Promise.all(
+    batchPids.map(async (pid, index) => {
+      try {
+        const response: any = await get(`/question/${pid}`)
+        if (response.data.code === 200) {
+          return {
+            ...response.data.data,
+            index: startIndex + index + 1,
+          }
+        }
+        return null
+      } catch (error) {
+        console.error(`Failed to fetch question ${pid}:`, error)
+        return null
+      }
+    }),
+  )
+
+  const validQuestions = newQuestions.filter((q) => q !== null)
+
+  addQuestion(validQuestions)
+
+  nextPid.value =
+    endIndex < wrongQuestionPids.value.length
+      ? wrongQuestionPids.value[endIndex]
+      : null
+  prevPid.value =
+    startIndex > 0 ? wrongQuestionPids.value[startIndex - 1] : null
+
+  isLoadingWrongQuestions.value = false
+}
+
 const getQuestions = async (params?: any, callback?: any) => {
   isLoadQuestion.value = true
+
+  if (userSetting.value.course === 3) {
+    try {
+      isLoadingWrongQuestions.value = true
+
+      const wrongItems = await userStore.getFolderContent('wrong')
+
+      let filteredItems = wrongItems
+      if (wrongSubject.value !== -1) {
+        filteredItems = wrongItems.filter(
+          (item) => item.course === wrongSubject.value,
+        )
+      }
+
+      if (userSetting.value.subject !== -1) {
+        filteredItems = filteredItems.filter(
+          (item) => item.subject === userSetting.value.subject,
+        )
+      }
+
+      if (userSetting.value.type !== -1) {
+        filteredItems = filteredItems.filter(
+          (item) => item.type === userSetting.value.type,
+        )
+      }
+
+      if (filteredItems.length === 0) {
+        notifyStore.addMessage('failed', '没有找到符合条件的错题记录')
+        questions.value = []
+        sequence.value = []
+        questionsInfo.value.total_questions = 0
+        isLoadQuestion.value = false
+        isLoadingWrongQuestions.value = false
+        return
+      }
+
+      if (userSetting.value.sort_column === 'wrong_time') {
+        filteredItems.sort((a, b) => {
+          const timeA = dayjs(a.time || 0)
+          const timeB = dayjs(b.time || 0)
+          return userSetting.value.order === 'asc'
+            ? timeA.diff(timeB)
+            : timeB.diff(timeA)
+        })
+      } else if (userSetting.value.sort_column === 'pid') {
+        filteredItems.sort((a, b) => {
+          const pidA = parseInt(a.pid, 10) || 0
+          const pidB = parseInt(b.pid, 10) || 0
+          return userSetting.value.order === 'asc' ? pidA - pidB : pidB - pidA
+        })
+      }
+
+      wrongQuestionPids.value = filteredItems.map((item) => item.pid)
+      sequence.value = wrongQuestionPids.value
+      questionsInfo.value = {
+        course: wrongSubject.value,
+        subject: userSetting.value.subject,
+        type: userSetting.value.type,
+        order: userSetting.value.order,
+        sort_column: userSetting.value.sort_column,
+        total_questions: wrongQuestionPids.value.length,
+      }
+
+      if (params?.index !== undefined) {
+        const requestedIndex = params.index
+
+        if (
+          requestedIndex <= 0 ||
+          requestedIndex > wrongQuestionPids.value.length
+        ) {
+          notifyStore.addMessage(
+            'failed',
+            `索引超出范围：${requestedIndex}，最大索引：${wrongQuestionPids.value.length}`,
+          )
+          isLoadQuestion.value = false
+          isLoadingWrongQuestions.value = false
+          return
+        }
+
+        const requestedPid = wrongQuestionPids.value[requestedIndex - 1]
+
+        try {
+          const response: any = await get(`/question/${requestedPid}`)
+          if (response.data.code === 200) {
+            const question = {
+              ...response.data.data,
+              index: requestedIndex,
+            }
+
+            const existingQuestionIndex = questions.value.findIndex(
+              (q) => q.pid === requestedPid,
+            )
+            if (existingQuestionIndex !== -1) {
+              questions.value[existingQuestionIndex] = question
+            } else {
+              questions.value.push(question)
+            }
+
+            nextPid.value =
+              requestedIndex < wrongQuestionPids.value.length
+                ? wrongQuestionPids.value[requestedIndex]
+                : null
+            prevPid.value =
+              requestedIndex > 1
+                ? wrongQuestionPids.value[requestedIndex - 2]
+                : null
+
+            const preloadCount = 2
+            const startIdx = Math.max(0, requestedIndex - preloadCount - 1)
+            const endIdx = Math.min(
+              wrongQuestionPids.value.length,
+              requestedIndex + preloadCount,
+            )
+
+            await loadWrongQuestionRange(startIdx, endIdx)
+          }
+        } catch (error) {
+          console.error(`Failed to fetch question ${requestedPid}:`, error)
+          notifyStore.addMessage('failed', `加载题目失败：${error}`)
+        }
+
+        isLoadQuestion.value = false
+        isLoadingWrongQuestions.value = false
+
+        if (callback) {
+          callback()
+        }
+
+        return
+      } else if (!questions.value.length) {
+        const firstBatchPids = wrongQuestionPids.value.slice(0, 10)
+        const wrongQuestions = await Promise.all(
+          firstBatchPids.map(async (pid, index) => {
+            try {
+              const response: any = await get(`/question/${pid}`)
+              if (response.data.code === 200) {
+                return {
+                  ...response.data.data,
+                  index: index + 1,
+                }
+              }
+              return null
+            } catch (error) {
+              console.error(`Failed to fetch question ${pid}:`, error)
+              return null
+            }
+          }),
+        )
+
+        const validQuestions = wrongQuestions.filter((q) => q !== null)
+        questions.value = validQuestions
+
+        nextPid.value =
+          wrongQuestionPids.value.length > 10
+            ? wrongQuestionPids.value[10]
+            : null
+        prevPid.value = null
+      }
+
+      isLoadQuestion.value = false
+      isLoadingWrongQuestions.value = false
+
+      if (callback) {
+        callback()
+      }
+
+      return
+    } catch (error) {
+      console.error('Error loading wrong questions:', error)
+      notifyStore.addMessage('failed', `加载错题异常：${error}`)
+      isLoadQuestion.value = false
+      isLoadingWrongQuestions.value = false
+      return
+    }
+  }
 
   const sendParams = {
     course: userSetting.value.course,
@@ -259,7 +537,53 @@ const debouncedGetQuestions = debounce((params?: any, callback?: any) => {
   getQuestions(params, callback)
 }, 500)
 
+const checkRouteParams = async () => {
+  const pid = route.params.pid
+  if (pid && typeof pid === 'string') {
+    try {
+      isDirectQuestionMode.value = true
+      isLoadQuestion.value = true
+      
+      const response: any = await get(`/question/${pid}`)
+
+      if (response.data.code === 200 && response.data.data) {
+        directQuestion.value = {
+          ...response.data.data,
+          index: 1,
+        }
+        
+        resetQuestionComplete()
+      } else {
+        notifyStore.addMessage('failed', `未找到题目: ${pid}`)
+        exitDirectMode()
+      }
+    } catch (error) {
+      console.error('Error loading question by PID:', error)
+      notifyStore.addMessage('failed', `加载题目失败: ${error}`)
+      exitDirectMode()
+    } finally {
+      isLoadQuestion.value = false
+    }
+  } else {
+    isDirectQuestionMode.value = false
+    directQuestion.value = null
+  }
+}
+
+const exitDirectMode = () => {
+  isDirectQuestionMode.value = false
+  directQuestion.value = null
+  router.push('/view')
+
+  if (questions.value.length === 0) {
+    getQuestions()
+  }
+}
+
 const currentQuestion = computed(() => {
+  if (isDirectQuestionMode.value && directQuestion.value) {
+    return directQuestion.value
+  }
   return (
     questions.value.find((question) => question.index === currentId.value) ||
     null
@@ -294,6 +618,26 @@ const prevQuestion = () => {
 
 const nextQuestion = () => {
   resetQuestionComplete()
+
+  if (userSetting.value.course === 3) {
+    const nextQuestion = questions.value
+      .filter((q) => q.index > currentId.value)
+      .sort((a, b) => a.index - b.index)[0]
+
+    if (nextQuestion) {
+      currentId.value = nextQuestion.index
+    } else if (currentId.value < wrongQuestionPids.value.length) {
+      loadMoreWrongQuestions(questions.value.length).then(() => {
+        const newNextQuestion = questions.value
+          .filter((q) => q.index > currentId.value)
+          .sort((a, b) => a.index - b.index)[0]
+        if (newNextQuestion) {
+          currentId.value = newNextQuestion.index
+        }
+      })
+    }
+    return
+  }
 
   const nextQuestion = questions.value
     .filter((q) => q.index > currentId.value)
@@ -335,25 +679,60 @@ watch(isSheetsActive, (newVal) => {
 const toQuestionByIndex = (indexNumber: number) => {
   if (questions.value.some((q) => q.index === indexNumber)) {
     currentId.value = indexNumber
+    isSheetsActive.value = false
   } else {
-    debouncedGetQuestions(
-      {
+    isLoadQuestion.value = true
+
+    if (userSetting.value.course === 3) {
+      getQuestions({
         index: indexNumber,
-      },
-      () => {
-        currentId.value = indexNumber
-        debouncedGetQuestions(
-          {
-            next_pid: nextPid.value,
-          },
-          () => {
-            currentId.value = indexNumber
-          },
-        )
-      },
-    )
+      })
+        .then(() => {
+          currentId.value = indexNumber
+          isSheetsActive.value = false
+        })
+        .finally(() => {
+          isLoadQuestion.value = false
+        })
+    } else {
+      debouncedGetQuestions(
+        {
+          index: indexNumber,
+        },
+        () => {
+          currentId.value = indexNumber
+          debouncedGetQuestions(
+            {
+              next_pid: nextPid.value,
+            },
+            () => {
+              currentId.value = indexNumber
+            },
+          )
+        },
+      )
+    }
   }
 }
+
+watch(wrongSubject, () => {
+  if (userSetting.value.course === 3) {
+    questions.value = []
+    currentId.value = 1
+    debouncedGetQuestions()
+  }
+})
+
+watch(
+  () => userSetting.value.course,
+  (newVal, oldVal) => {
+    if (oldVal === 3 && newVal !== 3) {
+      wrongSubject.value = null
+    } else if (newVal === 3 && !wrongSubject.value) {
+      wrongSubject.value = -1
+    }
+  },
+)
 
 const debouncedWatchHandler = debounce((newVal, oldVal) => {
   const indices = questions.value.map((q) => q.index)
@@ -597,9 +976,22 @@ const isQuestionDoneProgress = (pid: string): Boolean => {
   return doneStatus.value.includes(pid)
 }
 
-onMounted(() => {
+watch(
+  () => route.path,
+  async () => {
+    await checkRouteParams()
+  },
+  { immediate: true },
+)
+
+onMounted(async () => {
   window.addEventListener('keydown', handleKeydown)
-  getQuestions()
+  await checkRouteParams()
+
+  if (!isDirectQuestionMode.value) {
+    getQuestions()
+  }
+
   modeLoadDoneStatus()
 })
 
@@ -615,16 +1007,16 @@ onBeforeUnmount(() => {
   >
     <div
       class="question-single-mode question-mode"
-      v-if="renderMode === 'single'"
+      v-if="renderMode === 'single' || isDirectQuestionMode"
     >
       <div
         class="question-render-info"
         v-if="(!isLoadQuestion || questions.length > 0) && currentQuestion"
       >
         <div class="question-render-info__subject">
-          {{ renderQuestionCourse(questionsInfo?.course) }}
+          {{ renderQuestionCourse(currentQuestion?.course) }}
         </div>
-        <div class="question-render-info__status">
+        <div class="question-render-info__status" v-if="!isDirectQuestionMode">
           <div
             class="question-render-info__direction question-render-info__previous"
             @click="prevQuestion"
@@ -642,6 +1034,12 @@ onBeforeUnmount(() => {
             <span class="material-icons">keyboard_arrow_right</span>
           </div>
         </div>
+        <div class="question-render-info__status direct-mode-bar" v-else>
+          <div class="direct-mode-info">
+            <span class="material-icons">info</span>
+            <span>当前正在查看单题模式</span>
+          </div>
+        </div>
         <div
           class="question-render-info__id"
           @click="activeSheets"
@@ -652,6 +1050,7 @@ onBeforeUnmount(() => {
         <div
           class="question-render-info__sheets"
           :class="{ active: isSheetsActive }"
+           v-if="!isDirectQuestionMode"
         >
           <div class="question-render-info__title">答题卡</div>
           <div class="question-render-info__wrapper">
@@ -956,26 +1355,50 @@ onBeforeUnmount(() => {
         </div>
       </div>
       <div class="question-render-tools__options">
+        <button
+          v-if="isDirectQuestionMode"
+          @click="exitDirectMode"
+          class="exit-direct-mode-btn"
+        >
+          退出单题模式
+        </button>
         <select
           class="question-render-tools__option"
           v-model="userSetting.course"
           content="课程类型"
           v-tippy="{ appendTo: 'parent' }"
+          :disabled="isDirectQuestionMode"
         >
+          <option :value="1">文化课</option>
+          <option :value="2">专业课</option>
+          <option :value="3">错题</option>
+        </select>
+        <select
+          v-if="userSetting.course === 3"
+          v-model="wrongSubject"
+          :disabled="isDirectQuestionMode"
+        >
+          <option :value="-1">所有课程</option>
           <option :value="1">文化课</option>
           <option :value="2">专业课</option>
         </select>
         <select
           class="question-render-tools__option"
           v-model="userSetting.subject"
-          v-if="!questionStore.isGetQuestionInfo"
+          v-if="
+            (userSetting.course !== 3 && !questionStore.isGetQuestionInfo) ||
+            (userSetting.course === 3 && wrongSubject !== -1)
+          "
           content="科目"
           v-tippy="{ appendTo: 'parent' }"
+          :disabled="isDirectQuestionMode"
         >
           <option value="-1">所有科目</option>
           <option
             v-for="subject in questionStore.questionInfo[
-              userSetting.course === 1 ? 'cultural_lesson' : 'profession_lesson'
+              userSetting.course === 1 || wrongSubject === 1
+                ? 'cultural_lesson'
+                : 'profession_lesson'
             ]"
             :value="subject.subject"
             :key="subject.subject"
@@ -988,6 +1411,7 @@ onBeforeUnmount(() => {
           v-model="userSetting.type"
           content="题型"
           v-tippy="{ appendTo: 'parent' }"
+          :disabled="isDirectQuestionMode"
         >
           <option :value="-1">所有题型</option>
           <option :value="0">单选题</option>
@@ -1000,15 +1424,22 @@ onBeforeUnmount(() => {
           v-model="userSetting.sort_column"
           content="排序列"
           v-tippy="{ appendTo: 'parent' }"
+          :disabled="isDirectQuestionMode"
         >
           <option value="pid">题目编号</option>
-          <option value="crawl_count">出现概率</option>
+          <option value="crawl_count" v-if="userSetting.course !== 3">
+            出现概率
+          </option>
+          <option value="wrong_time" v-if="userSetting.course === 3">
+            做错时间
+          </option>
         </select>
         <select
           class="question-render-tools__option"
           v-model="userSetting.order"
           content="排序方式"
           v-tippy="{ appendTo: 'parent' }"
+          :disabled="isDirectQuestionMode"
         >
           <option value="asc">升序</option>
           <option value="desc">降序</option>
@@ -1048,7 +1479,7 @@ onBeforeUnmount(() => {
         >
           more_vert
         </div>
-        <div class="question-render-tools__switch">
+        <div class="question-render-tools__switch" v-if="!isDirectQuestionMode">
           <div
             class="material-icons-round single-mode"
             :class="{ 'current-mode': renderMode === 'single' }"
@@ -1279,6 +1710,25 @@ onBeforeUnmount(() => {
         }
       }
     }
+
+    .direct-mode-bar {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      color: var(--color-base--subtle);
+
+      .direct-mode-info {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        font-weight: 500;
+      }
+
+      .material-icons {
+        color: var(--color-base--subtle);
+        font-size: 1.0625rem;
+      }
+    }
   }
 
   .question-render-questions {
@@ -1303,6 +1753,7 @@ onBeforeUnmount(() => {
     }
 
     @include reset.reset-styles;
+
     .question-render-question {
       height: 100%;
       padding: var(--page-container-practice-margin-vertical)
@@ -1552,9 +2003,21 @@ onBeforeUnmount(() => {
 
     .question-render-tools__options {
       display: flex;
+      justify-content: center;
       align-items: center;
       flex-wrap: wrap;
       gap: 0.25rem;
+
+      .exit-direct-mode-btn {
+        color: var(--color-surface-0);
+        background: var(--color-primary);
+        transition: 250ms;
+        
+        &:hover {
+          cursor: pointer;
+          background: var(--color-base--subtle);
+        }
+      }
 
       .question-render-tools__option {
         &:hover {
