@@ -15,39 +15,43 @@ const questionStore = useQuestionStore()
 const REQUEST_DURATION = 60000
 
 const init = (async () => {
-    try {
-        if (await userStore.readLogin()) {
-            await Promise.all([authStore.getUserProfile(), userStore.fetchUserProgress(), userStore.fetchStarProgress()])
-        }
-
-        if (!userStore.login.isLogged) {
-            userStore.setting = authStore.readUserSetting() || userStore.setting
-        } else {
-            await authStore.getUserSetting()
-        }
-
-        await questionStore.getQuestionInfo(async () => {
-            userStore.updateProgressCount()
-        })
-    } catch (error) {
-        console.error('Initialization error:', error)
+  try {
+    if (await userStore.readLogin()) {
+      await Promise.all([
+        authStore.getUserProfile(),
+        userStore.fetchUserProgress(),
+        userStore.fetchStarProgress(),
+      ])
     }
+
+    if (!userStore.login.isLogged) {
+      userStore.setting = authStore.readUserSetting() || userStore.setting
+    } else {
+      await authStore.getUserSetting()
+    }
+
+    await questionStore.getQuestionInfo(async () => {
+      userStore.updateProgressCount()
+    })
+  } catch (error) {
+    console.error('Initialization error:', error)
+  }
 })()
 </script>
 
 <template>
-    <PageHeader />
-    <PageContainer />
-    <PageFooter />
-    <NotifyContainer />
+  <PageHeader />
+  <PageContainer />
+  <PageFooter />
+  <NotifyContainer />
 </template>
 
 <style lang="scss">
 #app {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-direction: column;
-    min-height: 100vh;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
+  min-height: 100vh;
 }
 </style>

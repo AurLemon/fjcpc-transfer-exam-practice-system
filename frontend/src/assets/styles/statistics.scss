@@ -1,149 +1,155 @@
-h1, .statistics-info {
-    text-align: justify;
-    padding: 0 2rem;
-    margin: 1.5rem auto;
-    max-width: var(--page-common-width);
+h1,
+.statistics-info {
+  text-align: justify;
+  padding: 0 2rem;
+  margin: 1.5rem auto;
+  max-width: var(--page-common-width);
 }
 
 .statistics-list {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-gap: var(--gap-value);
-    padding: 0 2rem;
-    margin: 0 auto;
-    margin-bottom: 2rem;
-    max-width: var(--page-common-width);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: var(--gap-value);
+  padding: 0 2rem;
+  margin: 0 auto;
+  margin-bottom: 2rem;
+  max-width: var(--page-common-width);
 }
 
 .statistics-item {
-    --progress-height: 5px;
-    display: flex;
-    flex-direction: column;
-    min-height: 280px;
-    padding-top: var(--progress-height);
-    border-radius: 12px;
-    border: 1px solid var(--border-color-base);
-    background: var(--color-surface-0);
-    position: relative;
-    overflow: hidden;
-    transition: var(--transition-hover);
+  --progress-height: 5px;
+  display: flex;
+  flex-direction: column;
+  min-height: 280px;
+  padding-top: var(--progress-height);
+  border-radius: 12px;
+  border: 1px solid var(--border-color-base);
+  background: var(--color-surface-0);
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition-hover);
 }
 
 .statistics-item:hover {
-    background: var(--background-color-primary--hover);
+  background: var(--background-color-primary--hover);
 }
 
 .statistics-item::after {
-    content: attr(count);
-    color: var(--color-surface-3);
-    font-size: 36px;
-    font-style: italic;
-    line-height: 1;
-    position: absolute;
-    right: calc(var(--gap-value) * 2.25);
-    bottom: calc(var(--gap-value) / 1.5);
-    opacity: 0.5;
-    transform: scale(1.75);
-    transform-origin: bottom right;
-    pointer-events: none;
+  content: attr(count);
+  color: var(--color-surface-3);
+  font-size: 36px;
+  font-style: italic;
+  line-height: 1;
+  position: absolute;
+  right: calc(var(--gap-value) * 2.25);
+  bottom: calc(var(--gap-value) / 1.5);
+  opacity: 0.5;
+  transform: scale(1.75);
+  transform-origin: bottom right;
+  pointer-events: none;
 }
 
 .statistics-item .statistics-item__label:not(:first-child) {
-    margin-top: 10px;
+  margin-top: 10px;
 }
 
 .statistics-item .statistics-item__info {
-    margin: 15px;
-    margin-bottom: 0;
+  margin: 15px;
+  margin-bottom: 0;
 }
 
 .statistics-item .statistics-item__opreateWrapper {
-    width: 230px;
-    padding-top: 15px;
-    margin: 15px;
-    border-top: 1px solid var(--border-color-base);
-    word-break: break-all;
+  width: 230px;
+  padding-top: 15px;
+  margin: 15px;
+  border-top: 1px solid var(--border-color-base);
+  word-break: break-all;
 }
 
 .statistics-item__opreate {
-    color: var(--color-base--subtle);
-    font-size: 13px;
+  color: var(--color-base--subtle);
+  font-size: 13px;
 }
 
 .statistics-item .statistics-item__unknown {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    padding-bottom: 24px;
-    position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding-bottom: 24px;
+  position: relative;
 }
 
 .statistics-item .statistics-item__unknown .statistics-item__unknownPic img {
-    display: block;
-    width: 200px;
-    height: 200px;
-    margin: auto;
-    border-radius: 50%;
-    opacity: 0.1;
-    filter: drop-shadow(1px 1px 4px rgba(0, 0, 0, .25));
-    transition: var(--transition-hover);
+  display: block;
+  width: 200px;
+  height: 200px;
+  margin: auto;
+  border-radius: 50%;
+  opacity: 0.1;
+  filter: drop-shadow(1px 1px 4px rgba(0, 0, 0, 0.25));
+  transition: var(--transition-hover);
 }
 
 .statistics-item .statistics-item__unknown .statistics-item__unknownTitle {
-    color: var(--color-base);
-    font-size: 24px;
-    font-weight: 600;
-    text-align: center;
-    position: absolute;
-    left: 12px;
-    right: 12px;
-    bottom: 12px;
-    opacity: 0;
-    user-select: none;
-    -webkit-user-select: none;
-    transition: var(--transition-hover);
+  color: var(--color-base);
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  opacity: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: var(--transition-hover);
 }
 
-.statistics-item .statistics-item__unknown:hover .statistics-item__unknownTitle {
-    opacity: 1;
-    user-select: auto;
-    -webkit-user-select: auto;
+.statistics-item
+  .statistics-item__unknown:hover
+  .statistics-item__unknownTitle {
+  opacity: 1;
+  user-select: auto;
+  -webkit-user-select: auto;
 }
 
-.statistics-item .statistics-item__unknown:hover .statistics-item__unknownPic img {
-    opacity: 1;
+.statistics-item
+  .statistics-item__unknown:hover
+  .statistics-item__unknownPic
+  img {
+  opacity: 1;
 }
 
 .statistics-item .statistics-item__progressWrapper {
-    height: var(--progress-height);
-    background: var(--color-surface-3);
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    overflow: hidden;
+  height: var(--progress-height);
+  background: var(--color-surface-3);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  overflow: hidden;
 }
 
 .statistics-item .statistics-item__progress {
-    width: 0%;
-    height: inherit;
-    background: var(--color-primary);
-    transition: var(--transition-hover);
+  width: 0%;
+  height: inherit;
+  background: var(--color-primary);
+  transition: var(--transition-hover);
 }
 
 @media screen and (min-width: 769px) and (max-width: 1024px) {
-    .statistics-list {
-        grid-template-columns: repeat(2, 1fr);
-    }
+  .statistics-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media screen and (max-width: 768px) {
-    h1 {
-        text-align: center;
-    }
-    
-    .statistics-list {
-        grid-template-columns: repeat(1, 1fr);
-    }
+  h1 {
+    text-align: center;
+  }
+
+  .statistics-list {
+    grid-template-columns: repeat(1, 1fr);
+  }
 }

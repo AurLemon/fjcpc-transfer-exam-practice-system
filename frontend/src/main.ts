@@ -12,7 +12,7 @@ import './assets/styles/tippy.scss'
 import 'material-icons/iconfont/material-icons.css'
 
 import Clarity from '@microsoft/clarity'
-const projectId = "m61b0fjnza"
+const projectId = 'm61b0fjnza'
 
 if (import.meta.env.PROD) {
   Clarity.init(projectId)
@@ -23,12 +23,12 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 app.use(VueTippy, {
-    directive: 'tippy',
-    defaultProps: {
-        placement: 'auto-end',
-        allowHTML: true,
-        theme: 'light'
-    }
+  directive: 'tippy',
+  defaultProps: {
+    placement: 'auto-end',
+    allowHTML: true,
+    theme: 'light',
+  },
 })
 
 app.mount('#app')

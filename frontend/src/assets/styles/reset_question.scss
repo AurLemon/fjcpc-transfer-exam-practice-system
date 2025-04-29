@@ -3,48 +3,43 @@
  */
 
 @mixin reset-styles {
-    :deep(.question-render-question) {
+  :deep(.question-render-question) {
+    .question-content,
+    .question-option-content,
+    .question-sub-option__content {
+      h1,
+      p {
+        margin: 0 !important;
 
+        &,
+        span {
+          color: var(--color-base) !important;
+          font-size: 16px !important;
+          font-family: var(--font-family-base) !important;
+          letter-spacing: 0 !important;
+          background: transparent !important;
+        }
+
+        img {
+          width: fit-content !important;
+          max-width: 100% !important;
+        }
+      }
+    }
+
+    .question-option {
+      &.answer,
+      &.error {
         .question-content,
         .question-option-content,
         .question-sub-option__content {
-
-            h1,
-            p {
-                margin: 0 !important;
-
-                &,
-                span {
-                    color: var(--color-base) !important;
-                    font-size: 16px !important;
-                    font-family: var(--font-family-base) !important;
-                    letter-spacing: 0 !important;
-                    background: transparent !important;
-                }
-
-                img {
-                    width: fit-content !important;
-                    max-width: 100% !important;
-                }
-            }
+          &,
+          p,
+          span {
+            color: var(--color-surface-0) !important;
+          }
         }
-
-        .question-option {
-
-            &.answer,
-            &.error {
-
-                .question-content,
-                .question-option-content,
-                .question-sub-option__content {
-
-                    &,
-                    p,
-                    span {
-                        color: var(--color-surface-0) !important;
-                    }
-                }
-            }
-        }
+      }
     }
+  }
 }
