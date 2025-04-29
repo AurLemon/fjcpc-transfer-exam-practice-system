@@ -2,7 +2,7 @@
 
 ![Demo](https://s2.loli.net/2024/10/26/AH7LoKVgkNWPJzq.jpg)
 
-![Version](https://img.shields.io/badge/Beta-3.0-yellow) ![License](https://img.shields.io/badge/license-MIT-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white) ![Vue.js](https://img.shields.io/badge/Vue.js%203-4FC08D?logo=vue.js&logoColor=white) ![NestJS](https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white)
+![Version](https://img.shields.io/badge/Release-3.0-yellow) ![License](https://img.shields.io/badge/license-MIT-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white) ![Vue.js](https://img.shields.io/badge/Vue.js%203-4FC08D?logo=vue.js&logoColor=white) ![NestJS](https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white)
 
 一个非官方的、简约的、基于 Vue、Nest 的船政转轨考刷题系统。
 
@@ -31,15 +31,15 @@
 
 ```json
 {
+  ...,
+  "scripts": {
     ...,
-    "scripts": {
-        ...,
-        "service": "npm-run-all --serial frontend:build start",
-        "service:dev": "npm-run-all --serial frontend:dev start",
-        "frontend:build": "rm -rf ./public/* && cd frontend && npm run build",
-        "frontend:dev": "cd frontend && npm run dev",
-        "frontend:install": "cd frontend && npm install"
-    }
+    "service": "npm-run-all --serial frontend:build start",
+    "service:dev": "npm-run-all --serial frontend:dev start",
+    "frontend:build": "rm -rf ./public/* && cd frontend && npm run build",
+    "frontend:dev": "cd frontend && npm run dev",
+    "frontend:install": "cd frontend && npm install"
+  }
 }
 ```
 
@@ -67,19 +67,25 @@
 
 不过，一开始只是写个获取题目的站点，后面花了几天时间发现可以做成刷题系统给周围的同学用嘻嘻。
 
-## 演示
-
-别急
-
 ## 项目迭代
 
-| 版本   | 日期                       | 功能                                    | 技术栈          | 部署                                |
-| :----- | :------------------------- | :-------------------------------------- | :-------------- | :---------------------------------- |
-| V1     | 2024年4月27日              | 爬取题目数据、去重                      | `JavaScript`    | 无                                  |
-| V2     | 2024年5月3日—2024年5月13日 | 相对完善的能用的做题工具                | `jQuery`、`PHP` | https://v2.fjcpc-teps.aurlemon.top/ |
-| **V3** | 当前，在写了               | 在V2的功能上继续添加功能，使用`Vue`重构 | `Vue`、`Nest`   | https://fjcpc-teps.aurlemon.top/    |
+| 版本   | 日期                         | 功能                                    | 技术栈          | 部署                                |
+| :----- | :--------------------------- | :-------------------------------------- | :-------------- | :---------------------------------- |
+| V1     | 2024年4月27日                | 爬取题目数据、去重                      | `JavaScript`    | 无                                  |
+| V2     | 2024年5月3日 ~ 2024年5月13日 | 相对完善的能用的做题工具                | `jQuery`、`PHP` | https://v2.fjcpc-teps.aurlemon.top/ |
+| **V3** | 2024年11月10日               | 在V2的功能上继续添加功能，使用`Vue`重构 | `Vue`、`Nest`   | https://fjcpc-teps.aurlemon.top/    |
+
+未来就不考虑继续重构了，本身转轨考 V3 项目就是我第一次入门 Vue 3 + TS + 后端的项目，有些组件的封装和一些类型的标注都很糊弄，但是改起来又很复杂，以后就只维护了。~~感觉除了给自己的学弟用以外不会有其它专业的来。~~
 
 ## TODO List
+
+#### 2024-7
+
+- [x] 使用 Nest 建立项目
+
+#### 2024-9
+
+- [x] 重构代码
 
 #### 2024-10
 
@@ -93,19 +99,9 @@
 - [x] 优化登录检查用户是否本人的逻辑，减少性能损失
 - [x] 新增移动端的专注（聚焦）模式，支持固定页面不乱晃
 
-#### 2025-1
+#### 2025-
 
-- [ ] 每题都带评论区
-- [ ] 支持刷错题
-- [ ] 收藏夹文件夹支持筛选
-- [ ] 收藏夹文件夹支持查看题目概览
-- [ ] 引入 Redis 以优化性能（数据库信息解密加密有点吃性能）
-- [ ] API 防护
-- [ ] 前端数据的加载逻辑
-
-#### 2025-2
-
-- [ ] 让项目更通用
+考虑到计应专业的 3+2 已经停招了…… 这个项目就暂时不加新功能或者未来重构了，有需求再加。
 
 ## 联系我
 
