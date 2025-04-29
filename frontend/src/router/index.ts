@@ -66,6 +66,11 @@ const router = createRouter({
       },
     },
     {
+      path: '/faq',
+      name: 'faq',
+      component: () => import('../views/FAQView.vue'),
+    },
+    {
       path: '/advanced',
       name: 'advanced',
       component: () => import('../views/AdvancedView.vue'),

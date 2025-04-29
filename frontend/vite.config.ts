@@ -5,6 +5,7 @@ import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import VueDevTools from 'vite-plugin-vue-devtools'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
+import Markdown from 'vite-plugin-md'
 
 export default defineConfig({
   server: {
@@ -18,12 +19,15 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        api: 'modern-compiler', // or "modern"
+        api: 'modern-compiler',
       },
     },
   },
   plugins: [
-    vue(),
+    vue({
+      include: [/\.vue$/, /\.md$/],
+    }),
+    Markdown(),
     vueJsx(),
     VueDevTools(),
     nodePolyfills({
