@@ -66,16 +66,22 @@ onBeforeUnmount(() => {
           >刷题</router-link
         >
         <router-link
-          to="/test"
-          class="page-container-main-tools__button"
-          :exact-active-class="'active'"
-          >试卷</router-link
-        >
-        <router-link
           to="/view"
           class="page-container-main-tools__button"
           :exact-active-class="'active'"
           >看题</router-link
+        >
+        <router-link
+          to="/search"
+          class="page-container-main-tools__button"
+          :exact-active-class="'active'"
+          >搜题</router-link
+        >
+        <router-link
+          to="/test"
+          class="page-container-main-tools__button"
+          :exact-active-class="'active'"
+          >练习</router-link
         >
         <router-link
           to="/star"

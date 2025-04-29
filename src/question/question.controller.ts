@@ -93,6 +93,55 @@ export class QuestionController {
     return ApiResponseUtil.success(200, await this.questionService.getStat());
   }
 
+  @Get('search')
+  async searchQuestions(
+    @Query('keyword') keyword: string,
+    @Query('course') course: string = '-1',
+    @Query('subject') subject: string = '-1',
+    @Query('type') type: string = '-1',
+    @Query('page') page: string = '1',
+    @Query('page_size') pageSize: string = '10',
+  ) {
+    if (!keyword || keyword.trim() === '') {
+      return ApiResponseUtil.error(
+        400,
+        'invalid_params',
+        'Keyword is required.',
+      );
+    }
+
+    const courseNumber = parseInt(course, 10);
+    const subjectNumber = parseInt(subject, 10);
+    const typeNumber = parseInt(type, 10);
+    const pageNumber = parseInt(page, 10);
+    const pageSizeNumber = parseInt(pageSize, 10);
+
+    if (
+      isNaN(courseNumber) ||
+      isNaN(subjectNumber) ||
+      isNaN(typeNumber) ||
+      isNaN(pageNumber) ||
+      isNaN(pageSizeNumber)
+    ) {
+      return ApiResponseUtil.error(
+        400,
+        'invalid_params',
+        'Numeric parameters must be valid numbers.',
+      );
+    }
+
+    const result = await this.questionService.searchQuestions(
+      keyword,
+      courseNumber,
+      subjectNumber,
+      typeNumber,
+      pageNumber,
+      pageSizeNumber,
+    );
+
+    return ApiResponseUtil.success(200, result);
+  }
+
   @Get(':pid')
   async getQuestion(@Param('pid') pid: string) {
     return ApiResponseUtil.success(

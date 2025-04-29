@@ -1,5 +1,14 @@
 <script lang="ts" setup>
-import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import {
+  ref,
+  computed,
+  watch,
+  nextTick,
+  onMounted,
+  onBeforeUnmount,
+  onBeforeMount,
+} from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import dayjs from 'dayjs'
 import * as _ from 'lodash-es'
 
@@ -10,6 +19,12 @@ import { useUserStore } from '@/stores/user'
 import { useQuestionStore } from '@/stores/question'
 import { useNotifyStore } from '@/stores/notify'
 import { useCardStore } from '@/stores/card'
+
+const route = useRoute()
+const router = useRouter()
+
+const isDirectQuestionMode = ref(false)
+const directQuestion = ref<Question | null>(null)
 
 const userStore = useUserStore()
 const questionStore = useQuestionStore()
@@ -522,7 +537,53 @@ const debouncedGetQuestions = debounce((params?: any, callback?: any) => {
   getQuestions(params, callback)
 }, 500)
 
+const checkRouteParams = async () => {
+  const pid = route.params.pid
+  if (pid && typeof pid === 'string') {
+    try {
+      isDirectQuestionMode.value = true
+      isLoadQuestion.value = true
+      
+      const response: any = await get(`/question/${pid}`)
+
+      if (response.data.code === 200 && response.data.data) {
+        directQuestion.value = {
+          ...response.data.data,
+          index: 1,
+        }
+        
+        resetQuestionComplete()
+      } else {
+        notifyStore.addMessage('failed', `未找到题目: ${pid}`)
+        exitDirectMode()
+      }
+    } catch (error) {
+      console.error('Error loading question by PID:', error)
+      notifyStore.addMessage('failed', `加载题目失败: ${error}`)
+      exitDirectMode()
+    } finally {
+      isLoadQuestion.value = false
+    }
+  } else {
+    isDirectQuestionMode.value = false
+    directQuestion.value = null
+  }
+}
+
+const exitDirectMode = () => {
+  isDirectQuestionMode.value = false
+  directQuestion.value = null
+  router.push('/view')
+
+  if (questions.value.length === 0) {
+    getQuestions()
+  }
+}
+
 const currentQuestion = computed(() => {
+  if (isDirectQuestionMode.value && directQuestion.value) {
+    return directQuestion.value
+  }
   return (
     questions.value.find((question) => question.index === currentId.value) ||
     null
@@ -915,9 +976,22 @@ const isQuestionDoneProgress = (pid: string): Boolean => {
   return doneStatus.value.includes(pid)
 }
 
-onMounted(() => {
+watch(
+  () => route.path,
+  async () => {
+    await checkRouteParams()
+  },
+  { immediate: true },
+)
+
+onMounted(async () => {
   window.addEventListener('keydown', handleKeydown)
-  getQuestions()
+  await checkRouteParams()
+
+  if (!isDirectQuestionMode.value) {
+    getQuestions()
+  }
+
   modeLoadDoneStatus()
 })
 
@@ -933,16 +1007,16 @@ onBeforeUnmount(() => {
   >
     <div
       class="question-single-mode question-mode"
-      v-if="renderMode === 'single'"
+      v-if="renderMode === 'single' || isDirectQuestionMode"
     >
       <div
         class="question-render-info"
         v-if="(!isLoadQuestion || questions.length > 0) && currentQuestion"
       >
         <div class="question-render-info__subject">
-          {{ renderQuestionCourse(questionsInfo?.course) }}
+          {{ renderQuestionCourse(currentQuestion?.course) }}
         </div>
-        <div class="question-render-info__status">
+        <div class="question-render-info__status" v-if="!isDirectQuestionMode">
           <div
             class="question-render-info__direction question-render-info__previous"
             @click="prevQuestion"
@@ -960,6 +1034,12 @@ onBeforeUnmount(() => {
             <span class="material-icons">keyboard_arrow_right</span>
           </div>
         </div>
+        <div class="direct-mode-bar" v-else>
+          <div class="direct-mode-info">
+            <span class="material-icons">info</span>
+            <span>当前正在查看单题模式</span>
+          </div>
+        </div>
         <div
           class="question-render-info__id"
           @click="activeSheets"
@@ -970,6 +1050,7 @@ onBeforeUnmount(() => {
         <div
           class="question-render-info__sheets"
           :class="{ active: isSheetsActive }"
+           v-if="!isDirectQuestionMode"
         >
           <div class="question-render-info__title">答题卡</div>
           <div class="question-render-info__wrapper">
@@ -1274,17 +1355,29 @@ onBeforeUnmount(() => {
         </div>
       </div>
       <div class="question-render-tools__options">
+        <button
+          v-if="isDirectQuestionMode"
+          @click="exitDirectMode"
+          class="exit-direct-mode-btn"
+        >
+          退出单题模式
+        </button>
         <select
           class="question-render-tools__option"
           v-model="userSetting.course"
           content="课程类型"
           v-tippy="{ appendTo: 'parent' }"
+          :disabled="isDirectQuestionMode"
         >
           <option :value="1">文化课</option>
           <option :value="2">专业课</option>
           <option :value="3">错题</option>
         </select>
-        <select v-if="userSetting.course === 3" v-model="wrongSubject">
+        <select
+          v-if="userSetting.course === 3"
+          v-model="wrongSubject"
+          :disabled="isDirectQuestionMode"
+        >
           <option :value="-1">所有课程</option>
           <option :value="1">文化课</option>
           <option :value="2">专业课</option>
@@ -1298,6 +1391,7 @@ onBeforeUnmount(() => {
           "
           content="科目"
           v-tippy="{ appendTo: 'parent' }"
+          :disabled="isDirectQuestionMode"
         >
           <option value="-1">所有科目</option>
           <option
@@ -1317,6 +1411,7 @@ onBeforeUnmount(() => {
           v-model="userSetting.type"
           content="题型"
           v-tippy="{ appendTo: 'parent' }"
+          :disabled="isDirectQuestionMode"
         >
           <option :value="-1">所有题型</option>
           <option :value="0">单选题</option>
@@ -1329,6 +1424,7 @@ onBeforeUnmount(() => {
           v-model="userSetting.sort_column"
           content="排序列"
           v-tippy="{ appendTo: 'parent' }"
+          :disabled="isDirectQuestionMode"
         >
           <option value="pid">题目编号</option>
           <option value="crawl_count" v-if="userSetting.course !== 3">
@@ -1343,6 +1439,7 @@ onBeforeUnmount(() => {
           v-model="userSetting.order"
           content="排序方式"
           v-tippy="{ appendTo: 'parent' }"
+          :disabled="isDirectQuestionMode"
         >
           <option value="asc">升序</option>
           <option value="desc">降序</option>
@@ -1382,7 +1479,7 @@ onBeforeUnmount(() => {
         >
           more_vert
         </div>
-        <div class="question-render-tools__switch">
+        <div class="question-render-tools__switch" v-if="!isDirectQuestionMode">
           <div
             class="material-icons-round single-mode"
             :class="{ 'current-mode': renderMode === 'single' }"
@@ -1611,6 +1708,25 @@ onBeforeUnmount(() => {
             transform: scale(0.99);
           }
         }
+      }
+    }
+
+    .direct-mode-bar {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      color: var(--color-base--subtle);
+
+      .direct-mode-info {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        font-weight: 500;
+      }
+
+      .material-icons {
+        color: var(--color-base--subtle);
+        font-size: 1.0625rem;
       }
     }
   }
@@ -1890,6 +2006,17 @@ onBeforeUnmount(() => {
       align-items: center;
       flex-wrap: wrap;
       gap: 0.25rem;
+
+      .exit-direct-mode-btn {
+        color: var(--color-surface-0);
+        background: var(--color-primary);
+        transition: 250ms;
+        
+        &:hover {
+          cursor: pointer;
+          background: var(--color-base--subtle);
+        }
+      }
 
       .question-render-tools__option {
         &:hover {

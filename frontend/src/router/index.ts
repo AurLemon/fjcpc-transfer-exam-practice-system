@@ -15,14 +15,25 @@ const router = createRouter({
       component: () => import('../views/PracticeView.vue'),
     },
     {
-      path: '/test',
-      name: 'test',
-      component: () => import('../views/TestView.vue'),
-    },
-    {
       path: '/view',
       name: 'view',
       component: () => import('../views/AllQuestionsView.vue'),
+    },
+    {
+      path: '/view/:pid',
+      name: 'viewQuestion',
+      component: () => import('../views/AllQuestionsView.vue'),
+      props: true,
+    },
+    {
+      path: '/search',
+      name: 'search',
+      component: () => import('../views/SearchView.vue'),
+    },
+    {
+      path: '/test',
+      name: 'test',
+      component: () => import('../views/TestView.vue'),
     },
     {
       path: '/star',

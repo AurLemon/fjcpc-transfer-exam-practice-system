@@ -474,4 +474,108 @@ export class QuestionService {
       },
     };
   }
+
+  async searchQuestions(
+    keyword: string,
+    course: number = -1,
+    subject: number = -1,
+    type: number = -1,
+    page: number = 1,
+    pageSize: number = 10,
+  ): Promise<{
+    questions: any[];
+    total: number;
+    page: number;
+    page_size: number;
+  }> {
+    const queryBuilder = this.questionsRepository
+      .createQueryBuilder('question')
+      .where('question.content LIKE :keyword', { keyword: `%${keyword}%` });
+
+    if (course !== -1) {
+      queryBuilder.andWhere('question.course = :course', { course });
+    }
+
+    if (subject !== -1) {
+      queryBuilder.andWhere('question.subject = :subject', { subject });
+    }
+
+    if (type !== -1) {
+      queryBuilder.andWhere('question.type = :type', { type });
+    }
+
+    const total = await queryBuilder.getCount();
+
+    const questions = await queryBuilder
+      .select([
+        'question.pid',
+        'question.content',
+        'question.course',
+        'question.subject',
+        'question.type',
+      ])
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+      .getMany();
+
+    const processedQuestions = questions.map((question) => {
+      const summary = this.extractContentSummary(question.content, keyword);
+
+      return {
+        pid: question.pid,
+        course: question.course,
+        subject: question.subject,
+        type: question.type,
+        content_summary: summary,
+      };
+    });
+
+    return {
+      questions: processedQuestions,
+      total,
+      page,
+      page_size: pageSize,
+    };
+  }
+
+  // 提取内容摘要并高亮关键词
+  private extractContentSummary(content: string, keyword: string): string {
+    const plainContent = content.replace(/<[^>]*>/g, '');
+
+    const keywordIndex = plainContent
+      .toLowerCase()
+      .indexOf(keyword.toLowerCase());
+
+    if (keywordIndex >= 0) {
+      const summaryLength = 100;
+      const startIndex = Math.max(0, keywordIndex - summaryLength / 2);
+      const endIndex = Math.min(
+        plainContent.length,
+        keywordIndex + keyword.length + summaryLength / 2,
+      );
+
+      let summary = plainContent.substring(startIndex, endIndex);
+
+      if (startIndex > 0) {
+        summary = '...' + summary;
+      }
+
+      if (endIndex < plainContent.length) {
+        summary = summary + '...';
+      }
+
+      const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+      const highlightedSummary = summary.replace(
+        new RegExp(escapedKeyword, 'gi'),
+        (match) => `<mark>${match}</mark>`,
+      );
+
+      return highlightedSummary;
+    }
+
+    return (
+      plainContent.substring(0, 100) + (plainContent.length > 100 ? '...' : '')
+    );
+  }
 }
