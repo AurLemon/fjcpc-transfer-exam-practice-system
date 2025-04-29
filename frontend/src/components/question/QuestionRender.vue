@@ -86,6 +86,10 @@ const lastUserSetting = ref<UserSetting>({
     order: 'asc'
 })
 
+const wrongSubject = ref<number>(1)
+const isLoadingWrongQuestions = ref<boolean>(false)
+const wrongQuestionPids = ref<string[]>([])
+
 const isDone = ref<boolean>(false)
 const doneStatus = ref<string[]>([])
 
@@ -213,6 +217,77 @@ const addQuestion = (newQuestions: any[]) => {
 
 const getQuestions = async (params?: any, callback?: any) => {
     isLoadQuestion.value = true
+    
+    if (userSetting.value.course === 3) {
+        try {
+            isLoadingWrongQuestions.value = true
+            
+            const wrongItems = await userStore.getFolderContent('wrong')
+            const filteredItems = wrongItems.filter(item => item.course === wrongSubject.value)
+            
+            if (filteredItems.length === 0) {
+                notifyStore.addMessage('failed', '没有找到错题记录，请先做题并收藏错题')
+                questions.value = []
+                sequence.value = []
+                questionsInfo.value.total_questions = 0
+                isLoadQuestion.value = false
+                isLoadingWrongQuestions.value = false
+                return
+            }
+            
+            wrongQuestionPids.value = filteredItems.map(item => item.pid)
+            
+            const firstBatchPids = wrongQuestionPids.value.slice(0, 10)
+            const wrongQuestions = await Promise.all(
+                firstBatchPids.map(async (pid, index) => {
+                    try {
+                        const response = await get(`/question/${pid}`)
+                        if (response.data.code === 200) {
+                            return {
+                                ...response.data.data,
+                                index: index + 1
+                            }
+                        }
+                        return null
+                    } catch (error) {
+                        console.error(`Failed to fetch question ${pid}:`, error)
+                        return null
+                    }
+                })
+            )
+            
+            const validQuestions = wrongQuestions.filter(q => q !== null)
+            
+            questions.value = validQuestions
+            sequence.value = wrongQuestionPids.value
+            questionsInfo.value = {
+                course: wrongSubject.value,
+                subject: -1,
+                type: -1,
+                order: 'asc',
+                sort_column: 'pid',
+                total_questions: wrongQuestionPids.value.length
+            }
+            
+            nextPid.value = wrongQuestionPids.value.length > 10 ? wrongQuestionPids.value[10] : null
+            prevPid.value = null
+            
+            isLoadQuestion.value = false
+            isLoadingWrongQuestions.value = false
+            
+            if (callback) {
+                callback()
+            }
+        } catch (error) {
+            console.error('Error loading wrong questions:', error)
+            notifyStore.addMessage('failed', `加载错题异常：${error}`)
+            isLoadQuestion.value = false
+            isLoadingWrongQuestions.value = false
+        } finally {
+            isLoadQuestion.value = false
+            return
+        }
+    }
 
     const sendParams = {
         course: userSetting.value.course,
@@ -335,9 +410,71 @@ const prevQuestion = () => {
     }
 }
 
+const loadMoreWrongQuestions = async (startIndex: number) => {
+    if (userSetting.value.course !== 3 || !wrongQuestionPids.value.length) return
+    
+    isLoadingWrongQuestions.value = true
+    
+    const batchSize = 10
+    const endIndex = Math.min(startIndex + batchSize, wrongQuestionPids.value.length)
+    const batchPids = wrongQuestionPids.value.slice(startIndex, endIndex)
+    
+    const newQuestions = await Promise.all(
+        batchPids.map(async (pid, index) => {
+            try {
+                const response = await get(`/question/${pid}`)
+                if (response.data.code === 200) {
+                    return {
+                        ...response.data.data,
+                        index: startIndex + index + 1
+                    }
+                }
+                return null
+            } catch (error) {
+                console.error(`Failed to fetch question ${pid}:`, error)
+                return null
+            }
+        })
+    )
+    
+    const validQuestions = newQuestions.filter(q => q !== null)
+    
+    addQuestion(validQuestions)
+    
+    nextPid.value = endIndex < wrongQuestionPids.value.length ? wrongQuestionPids.value[endIndex] : null
+    prevPid.value = startIndex > 0 ? wrongQuestionPids.value[startIndex - 1] : null
+    
+    isLoadingWrongQuestions.value = false
+}
+
+watch(wrongSubject, () => {
+    if (userSetting.value.course === 3) {
+        questions.value = []
+        currentId.value = 1
+        debouncedGetQuestions()
+    }
+})
+
 const nextQuestion = () => {
     resetQuestionComplete()
 
+    if (userSetting.value.course === 3) {
+        const nextQuestion = questions.value.filter((q) => q.index > currentId.value).sort((a, b) => a.index - b.index)[0]
+
+        if (nextQuestion) {
+            currentId.value = nextQuestion.index
+        } else if (currentId.value < wrongQuestionPids.value.length) {
+            loadMoreWrongQuestions(questions.value.length)
+                .then(() => {
+                    const newNextQuestion = questions.value.filter((q) => q.index > currentId.value).sort((a, b) => a.index - b.index)[0]
+                    if (newNextQuestion) {
+                        currentId.value = newNextQuestion.index
+                    }
+                })
+        }
+        return
+    }
+    
     const nextQuestion = questions.value.filter((q) => q.index > currentId.value).sort((a, b) => a.index - b.index)[0]
 
     if (nextQuestion) {
@@ -527,10 +664,10 @@ watch(
             userSetting.value.type = -1
         }
 
-        debouncedGetQuestions()
-        lastUserSetting.value = oldVal
         questions.value = []
         currentId.value = 1
+        debouncedGetQuestions()
+        lastUserSetting.value = oldVal
     },
     {
         deep: true
@@ -738,6 +875,11 @@ onBeforeUnmount(() => {
             </div>
             <div class="question-render-tools__options">
                 <select class="question-render-tools__option" v-model="userSetting.course" content="课程类型" v-tippy="{ appendTo: 'parent' }">
+                    <option :value="1">文化课</option>
+                    <option :value="2">专业课</option>
+                    <option :value="3">错题</option>
+                </select>
+                <select v-if="userSetting.course === 3" v-model="wrongSubject">
                     <option :value="1">文化课</option>
                     <option :value="2">专业课</option>
                 </select>
