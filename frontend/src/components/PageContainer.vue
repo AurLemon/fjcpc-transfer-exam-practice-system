@@ -123,7 +123,9 @@ onBeforeUnmount(() => {
       <div class="page-container-main-wrapper">
         <router-view v-slot="{ Component }">
           <transition name="route">
-            <component :is="Component" />
+            <keep-alive :include="['SearchView', 'TestView', 'StarView']">
+              <component :is="Component" />
+            </keep-alive>
           </transition>
         </router-view>
         <PageViewContainer />
