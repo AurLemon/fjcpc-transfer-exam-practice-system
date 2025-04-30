@@ -1,12 +1,18 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { RouterLink, RouterView } from 'vue-router'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
 
 import { useCardStore } from '@/stores/card'
 import ContainerPanel from '@/components/ContainerPanel.vue'
 import PageViewContainer from '@/components/PageViewContainer.vue'
 
 const cardStore = useCardStore()
+
+const route = useRoute()
+
+const isViewActive = computed(() => {
+  return route.path.startsWith('/view')
+})
 
 const isShowFocusMode = ref(window.innerWidth < 1080)
 
@@ -56,73 +62,74 @@ onBeforeUnmount(() => {
         <router-link
           to="/"
           class="page-container-main-tools__button"
-          :exact-active-class="'active'"
+          :active-class="'active'"
           >引导</router-link
         >
         <router-link
           to="/practice"
           class="page-container-main-tools__button"
-          :exact-active-class="'active'"
+          :active-class="'active'"
           >刷题</router-link
         >
         <router-link
           to="/view"
           class="page-container-main-tools__button"
-          :exact-active-class="'active'"
+          :class="{ active: isViewActive }"
+          :active-class="'active'"
           >看题</router-link
         >
         <router-link
           to="/search"
           class="page-container-main-tools__button"
-          :exact-active-class="'active'"
+          :active-class="'active'"
           >搜题</router-link
         >
         <router-link
           to="/test"
           class="page-container-main-tools__button"
-          :exact-active-class="'active'"
+          :active-class="'active'"
           >练习</router-link
         >
         <router-link
           to="/star"
           class="page-container-main-tools__button"
-          :exact-active-class="'active'"
+          :active-class="'active'"
           >收藏</router-link
         >
         <router-link
           to="/stat"
           class="page-container-main-tools__button"
-          :exact-active-class="'active'"
+          :active-class="'active'"
           >统计</router-link
         >
         <router-link
           to="/export"
           class="page-container-main-tools__button"
-          :exact-active-class="'active'"
+          :active-class="'active'"
           >导出</router-link
         >
         <router-link
           to="/faq"
           class="page-container-main-tools__button"
-          :exact-active-class="'active'"
+          :active-class="'active'"
           >FAQ</router-link
         >
         <router-link
           to="/advanced"
           class="page-container-main-tools__button"
-          :exact-active-class="'active'"
+          :active-class="'active'"
           >设置</router-link
         >
         <router-link
           to="/about"
           class="page-container-main-tools__button"
-          :exact-active-class="'active'"
+          :active-class="'active'"
           >关于</router-link
         >
         <router-link
           to="/debug"
           class="page-container-main-tools__button"
-          :exact-active-class="'active'"
+          :active-class="'active'"
           >调试</router-link
         >
       </div>
