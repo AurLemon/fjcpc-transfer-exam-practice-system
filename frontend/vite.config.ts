@@ -6,6 +6,7 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 import VueDevTools from 'vite-plugin-vue-devtools'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import Markdown from 'vite-plugin-md'
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   server: {
@@ -33,6 +34,7 @@ export default defineConfig({
     nodePolyfills({
       protocolImports: true,
     }),
+    tailwindcss(),
   ],
   resolve: {
     alias: {

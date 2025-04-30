@@ -5,6 +5,7 @@ import App from './App.vue'
 import router from './router'
 import VueTippy from 'vue-tippy'
 
+import '@/assets/styles/tailwind.css'
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css'
 import './assets/styles/main.scss'
