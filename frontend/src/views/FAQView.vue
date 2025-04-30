@@ -14,6 +14,10 @@ import 'prismjs/themes/prism-tomorrow.css'
 <style lang="scss">
 .markdown-body {
   background-color: transparent;
+
+  ul, ol {
+    list-style: disc;
+  }
 }
 
 .faq-container {
