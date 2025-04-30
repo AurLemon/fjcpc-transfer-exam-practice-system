@@ -1,3 +1,8 @@
+<div class="flex md:flex-row flex-col rounded overflow-hidden mb-3">
+  <img class="block w-[100%] md:w-[50%]" src="https://fjcpc-teps-1254268741.cos.ap-shanghai.myqcloud.com/content/faq/poster_1.jpg" />
+  <img class="block w-[100%] md:w-[50%]" src="https://fjcpc-teps-1254268741.cos.ap-shanghai.myqcloud.com/content/faq/poster_2.jpg" />
+</div>
+
 > 更新于 2025/5/1，最近几天会经常更新，建议不要太早看。
 
 ## 省流
@@ -202,6 +207,13 @@
 是的。船政每个学期最后两周叫**实训周**。我们 3+2 的内容就是电焊，焊东西，焊电阻、时钟。但是放心，难度不大。
 
 三年制的学生到了大二的实训周要去星网锐捷打螺丝一个月，我们 3+2 已经算爽了。
+
+<div class="flex gap-[0.5rem] md:flex-row flex-col">
+
+![](https://fjcpc-teps-1254268741.cos.ap-shanghai.myqcloud.com/content/faq/weld_1.jpg)
+
+![](https://fjcpc-teps-1254268741.cos.ap-shanghai.myqcloud.com/content/faq/weld_2.jpg)
+</div>
 </div>
 </div>
 
@@ -255,6 +267,8 @@
 不过，因为每周课表都不一样，所以学校 APP 里面截图截出来的也只是那一周的，并不是所有的，但课表都是按照这个排的：[24 计应（3+2）1 班第一学期课表](https://fjcpc-teps-1254268741.cos.ap-shanghai.myqcloud.com/files/faq/24%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%BA%94%E7%94%A8%E6%8A%80%E6%9C%AF%283%2B2%291%2845%E4%BA%BA%29.xlsx)。第二学期的导员没法所以就没有。
 
 ## 3+2 的课程
+水课居多，真正教你东西的课不超过 3 ~ 4 门。
+
 #### 第一学期
 | 课程 | 学分 | 考核方式 | 备注 |
 | ------- | ------- | ------- | ------- |

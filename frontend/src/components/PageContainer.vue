@@ -102,6 +102,12 @@ onBeforeUnmount(() => {
           >导出</router-link
         >
         <router-link
+          to="/faq"
+          class="page-container-main-tools__button"
+          :exact-active-class="'active'"
+          >FAQ</router-link
+        >
+        <router-link
           to="/advanced"
           class="page-container-main-tools__button"
           :exact-active-class="'active'"
