@@ -9,7 +9,7 @@ const notifyStore = useNotifyStore()
 
 const keyword = ref('')
 const isLoading = ref(false)
-// 移除 showResults - 我们总是显示结果区域
+
 const searchResults = ref<any[]>([])
 const total = ref(0)
 
@@ -85,13 +85,12 @@ const prevPage = () => {
   }
 }
 
-// Get course and subject names
 const getCourseLabel = (courseId: number) => {
   switch (courseId) {
     case 1:
-      return '文化课'
+      return '文化基础'
     case 2:
-      return '专业课'
+      return '专业基础'
     default:
       return '未知'
   }
@@ -112,19 +111,16 @@ const getTypeLabel = (typeId: number) => {
   }
 }
 
-// Watchers
 watch(keyword, (newVal) => {
   if (newVal.trim() !== '') {
-    searchParams.page = 1 // Reset to first page on new search
+    searchParams.page = 1
     debouncedSearch()
   } else {
     searchResults.value = []
   }
 })
 
-// 移除不再需要的事件监听器
 onMounted(() => {
-  // 页面加载时立即执行一次搜索，如果有关键词的话
   if (keyword.value.trim() !== '') {
     searchQuestions()
   }
@@ -144,8 +140,8 @@ onMounted(() => {
       <div class="search-filters">
         <select v-model="searchParams.course" @change="searchQuestions">
           <option value="-1">所有课程</option>
-          <option value="1">文化课</option>
-          <option value="2">专业课</option>
+          <option value="1">文化基础</option>
+          <option value="2">专业基础</option>
         </select>
 
         <select v-model="searchParams.type" @change="searchQuestions">
@@ -153,7 +149,7 @@ onMounted(() => {
           <option value="1">单选题</option>
           <option value="2">多选题</option>
           <option value="3">判断题</option>
-          <option value="8">组合题</option>
+          <option value="8">阅读题</option>
         </select>
       </div>
     </div>
