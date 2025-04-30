@@ -460,6 +460,7 @@ export default defineComponent({
         .container-panel-header-countdown__value {
           width: fit-content;
           font-size: 42px;
+          line-height: 1.25;
         }
 
         .container-panel-header-countdown__label {
