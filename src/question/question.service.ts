@@ -2,7 +2,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, Brackets } from 'typeorm';
 import { isEqual } from 'lodash';
 
 import { Question } from '../database/entities/question.entity';
@@ -488,9 +488,35 @@ export class QuestionService {
     page: number;
     page_size: number;
   }> {
+    const escapedKeyword = keyword.replace(/[%_]/g, '\\$&');
+
     const queryBuilder = this.questionsRepository
       .createQueryBuilder('question')
-      .where('question.content LIKE :keyword', { keyword: `%${keyword}%` });
+      .where(
+        new Brackets((qb) => {
+          qb.where('question.content LIKE :keyword', {
+            keyword: `%${escapedKeyword}%`,
+          })
+            .orWhere(
+              `JSON_EXTRACT(question.options, '$[*].txt') LIKE :optionKeyword`,
+              {
+                optionKeyword: `%${escapedKeyword}%`,
+              },
+            )
+            .orWhere(
+              `JSON_EXTRACT(question.sub_options, '$[*].tg') LIKE :subOptionKeyword`,
+              {
+                subOptionKeyword: `%${escapedKeyword}%`,
+              },
+            )
+            .orWhere(
+              `JSON_EXTRACT(question.sub_options, '$[*].list[*].txt') LIKE :subOptionListKeyword`,
+              {
+                subOptionListKeyword: `%${escapedKeyword}%`,
+              },
+            );
+        }),
+      );
 
     if (course !== -1) {
       queryBuilder.andWhere('question.course = :course', { course });
@@ -510,6 +536,8 @@ export class QuestionService {
       .select([
         'question.pid',
         'question.content',
+        'question.options',
+        'question.sub_options',
         'question.course',
         'question.subject',
         'question.type',
@@ -519,7 +547,7 @@ export class QuestionService {
       .getMany();
 
     const processedQuestions = questions.map((question) => {
-      const summary = this.extractContentSummary(question.content, keyword);
+      const summary = this.findAndExtractSummary(question, keyword);
 
       return {
         pid: question.pid,
@@ -536,6 +564,63 @@ export class QuestionService {
       page,
       page_size: pageSize,
     };
+  }
+
+  // 在题目的所有部分中查找关键词并提取摘要
+  private findAndExtractSummary(question: any, keyword: string): string {
+    const contentSummary = this.extractContentSummary(
+      question.content,
+      keyword,
+    );
+    if (contentSummary.includes('<mark>')) {
+      return contentSummary;
+    }
+
+    if (question.options && Array.isArray(question.options)) {
+      for (const option of question.options) {
+        if (
+          option.txt &&
+          option.txt.toLowerCase().includes(keyword.toLowerCase())
+        ) {
+          const optionText = this.extractContentSummary(option.txt, keyword);
+          return `<span class="option-label">${option.xx || '选项'}:</span> ${optionText}`;
+        }
+      }
+    }
+
+    if (question.sub_options && Array.isArray(question.sub_options)) {
+      for (let i = 0; i < question.sub_options.length; i++) {
+        const subOption = question.sub_options[i];
+
+        if (
+          subOption.tg &&
+          subOption.tg.toLowerCase().includes(keyword.toLowerCase())
+        ) {
+          const subContentSummary = this.extractContentSummary(
+            subOption.tg,
+            keyword,
+          );
+          return `<span class="sub-question-label">小题${i + 1}:</span> ${subContentSummary}`;
+        }
+
+        if (subOption.list && Array.isArray(subOption.list)) {
+          for (const listItem of subOption.list) {
+            if (
+              listItem.txt &&
+              listItem.txt.toLowerCase().includes(keyword.toLowerCase())
+            ) {
+              const optionSummary = this.extractContentSummary(
+                listItem.txt,
+                keyword,
+              );
+              return `<span class="sub-option-label">小题${i + 1}选项${listItem.xx || ''}:</span> ${optionSummary}`;
+            }
+          }
+        }
+      }
+    }
+
+    return contentSummary;
   }
 
   // 提取内容摘要并高亮关键词

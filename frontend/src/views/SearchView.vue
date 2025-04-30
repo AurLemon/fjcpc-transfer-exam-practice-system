@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import QuestionSearch from '@/components/question/QuestionSearch.vue'
+
+defineOptions({
+  name: 'SearchView'
+})
 </script>
 
 <template>
