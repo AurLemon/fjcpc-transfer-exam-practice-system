@@ -21,9 +21,14 @@
         }
 
         img {
+          display: inline-block !important;
           width: fit-content !important;
           max-width: 100% !important;
         }
+      }
+
+      img {
+        display: inline-block !important;
       }
     }
 
