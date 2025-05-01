@@ -775,6 +775,8 @@ watch(currentId, async (newVal, oldVal) => {
 })
 
 const addChoice = (id: number, type?: string, subOptionId?: number) => {
+  if (showAnswer.value) return
+
   const stringId = id.toString()
 
   if (type === 'sub_options' && subOptionId !== undefined) {
