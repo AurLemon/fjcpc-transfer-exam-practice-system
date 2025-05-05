@@ -79,7 +79,7 @@ export default defineComponent({
     },
     examCountdown(): number {
       const examDate = this.examTime()
-      return dayjs(examDate).diff(dayjs(), 'day')
+      return dayjs(examDate).diff(dayjs(), 'day') + 1
     },
   },
   computed: {
