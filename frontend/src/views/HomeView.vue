@@ -61,7 +61,7 @@ const openLoginCard = () => {
         欢迎通过下方 QQ 邮箱的 QQ 提问！另外已支持刷错题、搜题等功能。
       </div>
       <div class="page-guide-content__title">
-        <b>船政FAQ页</b>已上线。
+        <b>船政FAQ页</b>半夜又更新了。
       </div>
     </div>
     <div class="page-guide-desc">
