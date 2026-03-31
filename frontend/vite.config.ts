@@ -1,5 +1,6 @@
 import { fileURLToPath, URL } from 'node:url'
 import { createRequire } from 'node:module'
+import process from 'node:process'
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -12,6 +13,17 @@ import stdLibBrowser from 'node-stdlib-browser'
 
 const require = createRequire(import.meta.url)
 const esbuildShim = require.resolve('node-stdlib-browser/helpers/esbuild/shim')
+
+const ensureNodeProcess = () => {
+  if (
+    globalThis.process == null ||
+    typeof globalThis.process.cwd !== 'function'
+  ) {
+    globalThis.process = process
+  }
+}
+
+ensureNodeProcess()
 
 export default defineConfig({
   server: {
@@ -30,6 +42,15 @@ export default defineConfig({
     },
   },
   plugins: [
+    {
+      name: 'ensure-node-process',
+      configResolved() {
+        ensureNodeProcess()
+      },
+      buildStart() {
+        ensureNodeProcess()
+      },
+    },
     vue({
       include: [/\.vue$/, /\.md$/],
     }),
