@@ -56,7 +56,7 @@ export default defineConfig({
     include: ['buffer', 'process'],
   },
   build: {
-    outDir: '../public',
+    outDir: 'dist',
     emptyOutDir: true,
   },
 })
