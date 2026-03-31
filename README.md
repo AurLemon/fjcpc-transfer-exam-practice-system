@@ -18,30 +18,22 @@
 
 ## 部署
 
-- 在项目中，前后端的文件结构是一体的；前端的项目文件位于根目录下的 frontend 目录，而后端的逻辑代码直接位于根目录下的 src 文件夹。若直接观察结构，可注意到整个项目的结构其实就是后端工程项目里面套了一层前端工程项目。
+- 项目采用 pnpm workspace 结构：后端在 backend 目录，前端在 frontend 目录。
 
 1. 使用 `git clone https://github.com/AurLemon/fjcpc-transfer-exam-practice-system.git` 将仓库克隆到本地。
    当然，也可以直接在 GitHub 页面上面，选择 Download 以下载整个仓库。对于仓库克隆目录的具体用法，可查阅 Git 使用教程。
 
-2. 配置好 Node 环境、Node 变量、npm 包管理器后，进入项目目录，执行`npm run install`以安装依赖包。
+2. 配置好 Node 环境后，进入项目目录，执行 `pnpm install` 安装依赖。
 
-3. 执行 `npm run service` 以启动项目。
+3. 开发模式：
 
-4. 对于 npm 脚本的一些看法：其实直接执行 `npm run start` 也是可以的，但 `npm run start` 是只启动后端项目，前端需要自行打包。而 `npm run service` 是打包完前端后，再启动后端，为了方便就这么做了🤝👍。
+- 后端：`pnpm backend:dev`
+- 前端：`pnpm frontend:dev`
 
-```json
-{
-  ...,
-  "scripts": {
-    ...,
-    "service": "npm-run-all --serial frontend:build start",
-    "service:dev": "npm-run-all --serial frontend:dev start",
-    "frontend:build": "rm -rf ./public/* && cd frontend && npm run build",
-    "frontend:dev": "cd frontend && npm run dev",
-    "frontend:install": "cd frontend && npm install"
-  }
-}
-```
+4. 生产构建：
+
+- 构建全部：`pnpm build`
+- 单独构建：`pnpm backend:build` / `pnpm frontend:build`
 
 ## 这是干嘛的？
 
