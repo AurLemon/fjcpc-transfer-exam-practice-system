@@ -8,6 +8,7 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 import VueDevTools from 'vite-plugin-vue-devtools'
 import Markdown from 'vite-plugin-md'
 import tailwindcss from '@tailwindcss/vite'
+import ui from '@nuxt/ui/vite'
 import inject from '@rollup/plugin-inject'
 import stdLibBrowser from 'node-stdlib-browser'
 
@@ -56,6 +57,19 @@ export default defineConfig({
     }),
     Markdown(),
     vueJsx(),
+    ui({
+      theme: {
+        colors: ['primary', 'secondary', 'info', 'success', 'warning', 'error', 'neutral'],
+      },
+      ui: {
+        colors: {
+          primary: 'primary',
+          secondary: 'primary',
+          info: 'primary',
+          neutral: 'slate',
+        },
+      },
+    }),
     VueDevTools(),
     tailwindcss(),
     {

@@ -26,3 +26,4 @@ allowBuilds:
   '@parcel/watcher': true
   esbuild: true
   sharp: true
+  vue-demi: true

@@ -4,6 +4,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import VueTippy from 'vue-tippy'
+import ui from '@nuxt/ui/vue-plugin'
 
 import '@/assets/styles/tailwind.css'
 import 'tippy.js/dist/tippy.css'
@@ -31,5 +32,6 @@ app.use(VueTippy, {
     theme: 'light',
   },
 })
+app.use(ui)
 
 app.mount('#app')

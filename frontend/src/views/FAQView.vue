@@ -15,7 +15,8 @@ import 'prismjs/themes/prism-tomorrow.css'
 .markdown-body {
   background-color: transparent;
 
-  ul, ol {
+  ul,
+  ol {
     list-style: disc;
   }
 }

@@ -34,10 +34,10 @@ const openLoginCard = () => {
     </div>
     <div class="page-guide-content">
       <div class="page-guide-content__subtitle">
-        欢迎通过下方 QQ 邮箱的 QQ 提问！另外已支持刷错题、搜题等功能。
+        计应 3+2 自 2023 年开始已无招生，2025 年后已无维护的必要。
       </div>
       <div class="page-guide-content__title">
-        <b>船政FAQ页</b>半夜又更新了。
+        <b>本项目已归档</b>，目前只作为站长的作品集展示。
       </div>
     </div>
     <div class="page-guide-desc">
@@ -103,7 +103,7 @@ const openLoginCard = () => {
     <div class="page-guide-statement">
       <div class="material-icons">warning</div>
       <div class="context">
-        网站还在测试中，有需要可联系开发者邮箱<span class="email"
+        项目已归档，有需要可联系开发者邮箱<span class="email"
           >2115386831@qq.com</span
         >。
       </div>

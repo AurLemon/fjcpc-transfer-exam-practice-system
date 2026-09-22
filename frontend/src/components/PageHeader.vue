@@ -1,21 +1,26 @@
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script lang="ts" setup>
+import { ref } from 'vue'
 import { useCardStore } from '@/stores/card'
 
-export default defineComponent({
-  name: 'PageHeader',
-  methods: {
-    showMobilePanel() {
-      this.cardStore.mobileShowPanel = !this.cardStore.mobileShowPanel
-    },
-  },
-  setup() {
-    const cardStore = useCardStore()
-    return {
-      cardStore,
-    }
-  },
-})
+const cardStore = useCardStore()
+const isDarkMode = ref(localStorage.getItem('theme') === 'dark')
+
+const applyTheme = (dark: boolean) => {
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+  document.documentElement.classList.toggle('dark', dark)
+}
+
+const showMobilePanel = () => {
+  cardStore.mobileShowPanel = !cardStore.mobileShowPanel
+}
+
+const toggleDarkMode = () => {
+  isDarkMode.value = !isDarkMode.value
+  applyTheme(isDarkMode.value)
+  localStorage.setItem('theme', isDarkMode.value ? 'dark' : 'light')
+}
+
+applyTheme(isDarkMode.value)
 </script>
 
 <template>
@@ -28,6 +33,15 @@ export default defineComponent({
         计大船政转轨考の刷题系统3.1
       </div>
       <div class="page-menu-list">
+        <button
+          class="page-menu-theme-toggle material-icons -mr-1"
+          type="button"
+          :aria-label="isDarkMode ? '切换浅色模式' : '切换深色模式'"
+          v-tippy="{ content: isDarkMode ? '浅色模式' : '深色模式' }"
+          @click="toggleDarkMode"
+        >
+          {{ isDarkMode ? 'light_mode' : 'dark_mode' }}
+        </button>
         <div class="page-menu-link">
           <a
             href="https://www.fjcpc.edu.cn/"
@@ -49,6 +63,7 @@ export default defineComponent({
             <img
               src="../assets/images/logo/GitHub_logo.svg"
               alt="Gitee 项目地址"
+              class="dark:filter-[invert(1)]"
             />
           </a>
         </div>
@@ -131,7 +146,6 @@ export default defineComponent({
 
     .page-menu-link {
       border-radius: 50%;
-      box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2);
       overflow: hidden;
       transition: var(--transition-hover);
 
@@ -144,6 +158,22 @@ export default defineComponent({
       &:hover {
         filter: brightness(1.1);
         transform: scale(1.05);
+      }
+    }
+
+    .page-menu-theme-toggle {
+      display: block;
+      width: 32px;
+      height: 32px;
+      padding: 0 !important;
+      border: 0;
+      border-radius: 50%;
+      color: var(--color-base--subtle);
+      background: transparent;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--border-color-base);
       }
     }
   }

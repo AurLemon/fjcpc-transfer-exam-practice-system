@@ -93,7 +93,52 @@ const userSetting = ref<UserSetting>({
   order: 'asc',
 })
 
+const courseItems = [
+  { label: '文化课', value: 1 },
+  { label: '专业课', value: 2 },
+  { label: '错题', value: 3 },
+]
+const wrongSubjectItems = [
+  { label: '所有课程', value: -1 },
+  { label: '文化课', value: 1 },
+  { label: '专业课', value: 2 },
+]
 const wrongSubject = ref<number | null>(null)
+const questionTypeItems = [
+  { label: '所有题型', value: -1 },
+  { label: '单选题', value: 0 },
+  { label: '多选题', value: 1 },
+  { label: '判断题', value: 2 },
+  { label: '阅读题', value: 8 },
+]
+const orderItems = [
+  { label: '升序', value: 'asc' },
+  { label: '降序', value: 'desc' },
+]
+const sortColumnItems = computed(() =>
+  userSetting.value.course === 3
+    ? [
+        { label: '题目编号', value: 'pid' },
+        { label: '做错时间', value: 'wrong_time' },
+      ]
+    : [
+        { label: '题目编号', value: 'pid' },
+        { label: '出现概率', value: 'crawl_count' },
+      ],
+)
+const selectUi = {
+  base: 'question-filter-select-trigger',
+  content: 'question-filter-select-content',
+}
+const subjectItems = computed(() => [
+  { label: '所有科目', value: -1 },
+  ...questionStore.questionInfo[
+    userSetting.value.course === 1 || wrongSubject.value === 1
+      ? 'cultural_lesson'
+      : 'profession_lesson'
+  ].map((subject) => ({ label: subject.name, value: subject.subject })),
+])
+
 const isLoadingWrongQuestions = ref<boolean>(false)
 const wrongQuestionPids = ref<string[]>([])
 
@@ -543,7 +588,7 @@ const checkRouteParams = async () => {
     try {
       isDirectQuestionMode.value = true
       isLoadQuestion.value = true
-      
+
       const response: any = await get(`/question/${pid}`)
 
       if (response.data.code === 200 && response.data.data) {
@@ -551,7 +596,7 @@ const checkRouteParams = async () => {
           ...response.data.data,
           index: 1,
         }
-        
+
         resetQuestionComplete()
       } else {
         notifyStore.addMessage('failed', `未找到题目: ${pid}`)
@@ -1050,7 +1095,7 @@ onBeforeUnmount(() => {
         <div
           class="question-render-info__sheets"
           :class="{ active: isSheetsActive }"
-           v-if="!isDirectQuestionMode"
+          v-if="!isDirectQuestionMode"
         >
           <div class="question-render-info__title">答题卡</div>
           <div class="question-render-info__wrapper">
@@ -1362,88 +1407,59 @@ onBeforeUnmount(() => {
         >
           退出单题模式
         </button>
-        <select
-          class="question-render-tools__option"
+        <USelect
           v-model="userSetting.course"
-          content="课程类型"
-          v-tippy="{ appendTo: 'parent' }"
+          :items="courseItems"
+          :ui="selectUi"
           :disabled="isDirectQuestionMode"
-        >
-          <option :value="1">文化课</option>
-          <option :value="2">专业课</option>
-          <option :value="3">错题</option>
-        </select>
-        <select
+          class="question-render-tools__option"
+          aria-label="课程类型"
+        />
+        <USelect
           v-if="userSetting.course === 3"
           v-model="wrongSubject"
+          :items="wrongSubjectItems"
+          :ui="selectUi"
           :disabled="isDirectQuestionMode"
-        >
-          <option :value="-1">所有课程</option>
-          <option :value="1">文化课</option>
-          <option :value="2">专业课</option>
-        </select>
-        <select
           class="question-render-tools__option"
+          aria-label="错题课程"
+        />
+        <USelect
           v-model="userSetting.subject"
           v-if="
             (userSetting.course !== 3 && !questionStore.isGetQuestionInfo) ||
             (userSetting.course === 3 && wrongSubject !== -1)
           "
-          content="科目"
-          v-tippy="{ appendTo: 'parent' }"
+          :items="subjectItems"
+          :ui="selectUi"
           :disabled="isDirectQuestionMode"
-        >
-          <option value="-1">所有科目</option>
-          <option
-            v-for="subject in questionStore.questionInfo[
-              userSetting.course === 1 || wrongSubject === 1
-                ? 'cultural_lesson'
-                : 'profession_lesson'
-            ]"
-            :value="subject.subject"
-            :key="subject.subject"
-          >
-            {{ subject.name }}
-          </option>
-        </select>
-        <select
           class="question-render-tools__option"
+          aria-label="科目"
+        />
+        <USelect
           v-model="userSetting.type"
-          content="题型"
-          v-tippy="{ appendTo: 'parent' }"
+          :items="questionTypeItems"
+          :ui="selectUi"
           :disabled="isDirectQuestionMode"
-        >
-          <option :value="-1">所有题型</option>
-          <option :value="0">单选题</option>
-          <option :value="1">多选题</option>
-          <option :value="2">判断题</option>
-          <option :value="8">阅读题</option>
-        </select>
-        <select
           class="question-render-tools__option"
+          aria-label="题型"
+        />
+        <USelect
           v-model="userSetting.sort_column"
-          content="排序列"
-          v-tippy="{ appendTo: 'parent' }"
+          :items="sortColumnItems"
+          :ui="selectUi"
           :disabled="isDirectQuestionMode"
-        >
-          <option value="pid">题目编号</option>
-          <option value="crawl_count" v-if="userSetting.course !== 3">
-            出现概率
-          </option>
-          <option value="wrong_time" v-if="userSetting.course === 3">
-            做错时间
-          </option>
-        </select>
-        <select
           class="question-render-tools__option"
+          aria-label="排序列"
+        />
+        <USelect
           v-model="userSetting.order"
-          content="排序方式"
-          v-tippy="{ appendTo: 'parent' }"
+          :items="orderItems"
+          :ui="selectUi"
           :disabled="isDirectQuestionMode"
-        >
-          <option value="asc">升序</option>
-          <option value="desc">降序</option>
-        </select>
+          class="question-render-tools__option"
+          aria-label="排序方式"
+        />
       </div>
       <div class="question-render-tools__buttons">
         <div
@@ -2003,7 +2019,6 @@ onBeforeUnmount(() => {
 
     .question-render-tools__options {
       display: flex;
-      justify-content: center;
       align-items: center;
       flex-wrap: wrap;
       gap: 0.25rem;
@@ -2012,7 +2027,7 @@ onBeforeUnmount(() => {
         color: var(--color-surface-0);
         background: var(--color-primary);
         transition: 250ms;
-        
+
         &:hover {
           cursor: pointer;
           background: var(--color-base--subtle);

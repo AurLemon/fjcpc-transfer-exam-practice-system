@@ -83,7 +83,7 @@ export default defineComponent({
     },
     viewQuestion(pid: string) {
       this.router.push(`/view/${pid}`)
-    }
+    },
   },
 })
 </script>

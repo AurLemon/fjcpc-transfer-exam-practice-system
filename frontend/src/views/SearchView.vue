@@ -2,7 +2,7 @@
 import QuestionSearch from '@/components/question/QuestionSearch.vue'
 
 defineOptions({
-  name: 'SearchView'
+  name: 'SearchView',
 })
 </script>
 

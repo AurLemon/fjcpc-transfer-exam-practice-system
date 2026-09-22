@@ -78,6 +78,52 @@ const userSetting = ref<UserSetting>({
   order: 'asc',
 })
 
+const courseItems = [
+  { label: '文化课', value: 1 },
+  { label: '专业课', value: 2 },
+  { label: '错题', value: 3 },
+]
+const wrongSubjectItems = [
+  { label: '所有课程', value: -1 },
+  { label: '文化课', value: 1 },
+  { label: '专业课', value: 2 },
+]
+const wrongSubject = ref<number | null>(null)
+const questionTypeItems = [
+  { label: '所有题型', value: -1 },
+  { label: '单选题', value: 0 },
+  { label: '多选题', value: 1 },
+  { label: '判断题', value: 2 },
+  { label: '阅读题', value: 8 },
+]
+const sortColumnItems = computed(() =>
+  userSetting.value.course === 3
+    ? [
+        { label: '题目编号', value: 'pid' },
+        { label: '做错时间', value: 'wrong_time' },
+      ]
+    : [
+        { label: '题目编号', value: 'pid' },
+        { label: '出现概率', value: 'crawl_count' },
+      ],
+)
+const orderItems = [
+  { label: '升序', value: 'asc' },
+  { label: '降序', value: 'desc' },
+]
+const selectUi = {
+  base: 'question-filter-select-trigger',
+  content: 'question-filter-select-content',
+}
+const subjectItems = computed(() => [
+  { label: '所有科目', value: -1 },
+  ...questionStore.questionInfo[
+    userSetting.value.course === 1 || wrongSubject.value === 1
+      ? 'cultural_lesson'
+      : 'profession_lesson'
+  ].map((subject) => ({ label: subject.name, value: subject.subject })),
+])
+
 const lastUserSetting = ref<UserSetting>({
   course: 1,
   subject: -1,
@@ -86,7 +132,6 @@ const lastUserSetting = ref<UserSetting>({
   order: 'asc',
 })
 
-const wrongSubject = ref<number | null>(null)
 const isLoadingWrongQuestions = ref<boolean>(false)
 const wrongQuestionPids = ref<string[]>([])
 
@@ -631,7 +676,7 @@ watch(
     } else {
       wrongSubject.value = !wrongSubject.value ? -1 : wrongSubject.value
     }
-  }
+  },
 )
 
 const nextQuestion = () => {
@@ -1222,79 +1267,53 @@ onBeforeUnmount(() => {
         </button>
       </div>
       <div class="question-render-tools__options">
-        <select
-          class="question-render-tools__option"
+        <USelect
           v-model="userSetting.course"
-          content="课程类型"
-          v-tippy="{ appendTo: 'parent' }"
-        >
-          <option :value="1">文化课</option>
-          <option :value="2">专业课</option>
-          <option :value="3">错题</option>
-        </select>
-        <select v-if="userSetting.course === 3" v-model="wrongSubject">
-          <option :value="-1">所有课程</option>
-          <option :value="1">文化课</option>
-          <option :value="2">专业课</option>
-        </select>
-        <select
+          :items="courseItems"
+          :ui="selectUi"
           class="question-render-tools__option"
+          aria-label="课程类型"
+        />
+        <USelect
+          v-if="userSetting.course === 3"
+          v-model="wrongSubject"
+          :items="wrongSubjectItems"
+          :ui="selectUi"
+          class="question-render-tools__option"
+          aria-label="错题课程"
+        />
+        <USelect
           v-model="userSetting.subject"
           v-if="
             (userSetting.course !== 3 && !questionStore.isGetQuestionInfo) ||
             wrongSubject !== -1
           "
-          content="科目"
-          v-tippy="{ appendTo: 'parent' }"
-        >
-          <option value="-1">所有科目</option>
-          <option
-            v-for="subject in questionStore.questionInfo[
-              userSetting.course === 1 || wrongSubject === 1
-                ? 'cultural_lesson'
-                : 'profession_lesson'
-            ]"
-            :value="subject.subject"
-            :key="subject.subject"
-          >
-            {{ subject.name }}
-          </option>
-        </select>
-        <select
+          :items="subjectItems"
+          :ui="selectUi"
           class="question-render-tools__option"
+          aria-label="科目"
+        />
+        <USelect
           v-model="userSetting.type"
-          content="题型"
-          v-tippy="{ appendTo: 'parent' }"
-        >
-          <option :value="-1">所有题型</option>
-          <option :value="0">单选题</option>
-          <option :value="1">多选题</option>
-          <option :value="2">判断题</option>
-          <option :value="8">阅读题</option>
-        </select>
-        <select
+          :items="questionTypeItems"
+          :ui="selectUi"
           class="question-render-tools__option"
+          aria-label="题型"
+        />
+        <USelect
           v-model="userSetting.sort_column"
-          content="排序列"
-          v-tippy="{ appendTo: 'parent' }"
-        >
-          <option value="pid">题目编号</option>
-          <option value="crawl_count" v-if="userSetting.course !== 3">
-            出现概率
-          </option>
-          <option value="wrong_time" v-if="userSetting.course === 3">
-            做错时间
-          </option>
-        </select>
-        <select
+          :items="sortColumnItems"
+          :ui="selectUi"
           class="question-render-tools__option"
+          aria-label="排序列"
+        />
+        <USelect
           v-model="userSetting.order"
-          content="排序方式"
-          v-tippy="{ appendTo: 'parent' }"
-        >
-          <option value="asc">升序</option>
-          <option value="desc">降序</option>
-        </select>
+          :items="orderItems"
+          :ui="selectUi"
+          class="question-render-tools__option"
+          aria-label="排序方式"
+        />
       </div>
       <div class="question-render-tools__buttons">
         <div

@@ -44,6 +44,30 @@ const filteredSubjects = computed(() => {
   )
 })
 
+const courseItems = computed(() =>
+  config.value.courses.map((course) => ({
+    label: course.name,
+    value: course.id,
+  })),
+)
+const subjectItems = computed(() =>
+  filteredSubjects.value.map((subject) => ({
+    label: subject.name,
+    value: subject.id,
+  })),
+)
+const questionTypeItems = [
+  { label: '所有题型', value: -1 },
+  { label: '单选题', value: 0 },
+  { label: '多选题', value: 1 },
+  { label: '判断题', value: 2 },
+  { label: '阅读题', value: 8 },
+]
+const selectUi = {
+  base: 'export-select-trigger',
+  content: 'export-select-content',
+}
+
 const getExportConfig = async () => {
   isLoading.value = true
   try {
@@ -67,9 +91,9 @@ const exportQuestions = () => {
     params.append('subject', exportSettings.value.subject.toString())
     params.append('includeImage', exportSettings.value.includeImage.toString())
     params.append('questionType', exportSettings.value.questionType.toString())
-    
+
     const url = `/api/export/questions?${params.toString()}`
-    
+
     window.location.href = url
 
     notifyStore.addMessage('success', '正在导出题目，请稍等...')
@@ -116,7 +140,7 @@ onMounted(() => {
         <div class="export-view-field">
           <label for="count">题目数量</label>
           <div class="export-view-input-wrapper">
-            <input
+            <UInput
               type="number"
               id="count"
               v-model="exportSettings.count"
@@ -131,70 +155,51 @@ onMounted(() => {
         <div class="export-view-field">
           <label for="course">课程类型</label>
           <div class="export-view-input-wrapper">
-            <select
+            <USelect
               id="course"
               v-model="exportSettings.course"
+              :items="courseItems"
+              :ui="selectUi"
               class="export-view-select"
-            >
-              <option
-                v-for="course in config.courses"
-                :key="course.id"
-                :value="course.id"
-              >
-                {{ course.name }}
-              </option>
-            </select>
+            />
           </div>
         </div>
 
         <div class="export-view-field">
           <label for="subject">科目</label>
           <div class="export-view-input-wrapper">
-            <select
+            <USelect
               id="subject"
               v-model="exportSettings.subject"
+              :items="subjectItems"
+              :ui="selectUi"
               class="export-view-select"
-            >
-              <option
-                v-for="subject in filteredSubjects"
-                :key="subject.id"
-                :value="subject.id"
-              >
-                {{ subject.name }}
-              </option>
-            </select>
+            />
           </div>
         </div>
 
         <div class="export-view-field">
           <label for="questionType">题目类型</label>
           <div class="export-view-input-wrapper">
-            <select
+            <USelect
               id="questionType"
               v-model="exportSettings.questionType"
+              :items="questionTypeItems"
+              :ui="selectUi"
               class="export-view-select"
-            >
-              <option value="-1">所有题型</option>
-              <option value="0">单选题</option>
-              <option value="1">多选题</option>
-              <option value="2">判断题</option>
-              <option value="8">阅读题</option>
-            </select>
+            />
           </div>
         </div>
 
         <div class="export-view-field">
           <label for="includeImage">包含图片</label>
           <div class="export-view-input-wrapper">
-            <div class="export-view-checkbox-wrapper">
-              <input
-                type="checkbox"
-                id="includeImage"
-                v-model="exportSettings.includeImage"
-                class="export-view-checkbox"
-              />
-              <span class="export-view-checkbox-label">包含带图片的题目</span>
-            </div>
+            <UCheckbox
+              id="includeImage"
+              v-model="exportSettings.includeImage"
+              label="包含带图片的题目"
+              class="export-view-checkbox"
+            />
             <div class="export-view-input-hint">
               有一点
               BUG，图片的尺寸不太对，如果不勾选，将只导出不包含图片的题目。
@@ -288,22 +293,18 @@ onMounted(() => {
 
           .export-view-input,
           .export-view-select {
-            width: 100%;
-            max-width: 300px;
-            padding: 8px 10px;
-            border: 1px solid var(--border-color-base);
-            border-radius: 8px;
-            background-color: var(--background-color-primary--active);
-            transition: 150ms ease;
+            width: 8rem;
+            max-width: 8rem;
+          }
 
-            &:hover {
-              background-color: var(--color-surface-3);
-            }
+          .export-view-input {
+            width: 8rem;
+            max-width: 8rem;
+          }
 
-            &:focus {
-              border-color: var(--color-primary);
-              outline: none;
-            }
+          .export-view-select {
+            width: 8rem;
+            max-width: 8rem;
           }
 
           .export-view-checkbox-wrapper {

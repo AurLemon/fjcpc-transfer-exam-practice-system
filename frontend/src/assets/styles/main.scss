@@ -70,6 +70,59 @@ $focus-mode-transition-duration: 250ms;
   --page-common-width: 1080px;
   --success-color: #00ba68;
   --failed-color: #c73413;
+
+  --ui-color-primary-25: hsl(200 55% 98%);
+  --ui-color-primary-50: hsl(200 60% 96%);
+  --ui-color-primary-100: hsl(200 58% 92%);
+  --ui-color-primary-200: hsl(200 57% 84%);
+  --ui-color-primary-300: hsl(200 56% 72%);
+  --ui-color-primary-400: hsl(200 56% 60%);
+  --ui-color-primary-500: hsl(200 55% 48%);
+  --ui-color-primary-600: hsl(200 58% 42%);
+  --ui-color-primary-700: hsl(200 62% 36%);
+  --ui-color-primary-800: hsl(200 66% 30%);
+  --ui-color-primary-900: hsl(200 70% 24%);
+  --ui-color-primary-950: hsl(200 74% 16%);
+}
+
+:root[data-theme='dark'] {
+  --color-surface-0: hsl(var(--color-primary__h), 8%, 12%);
+  --color-surface-1: hsl(var(--color-primary__h), 8%, 15%);
+  --color-surface-2: hsl(var(--color-primary__h), 9%, 19%);
+  --color-surface-3: hsl(var(--color-primary__h), 10%, 28%);
+  --color-surface-4: hsl(var(--color-primary__h), 10%, 52%);
+  --background-color-overlay: hsla(var(--color-primary__h), 8%, 12%, 0.95);
+  --background-color-overlay--lighter: hsla(
+    var(--color-primary__h),
+    8%,
+    12%,
+    0.75
+  );
+  --color-base--emphasized: hsl(var(--color-primary__h), 20%, 96%);
+  --color-base: hsl(var(--color-primary__h), 20%, 88%);
+  --color-base--subtle: hsl(var(--color-primary__h), 18%, 70%);
+  --border-color-base: rgba(255, 255, 255, 0.08);
+  --border-color-base--lighter: rgba(255, 255, 255, 0.035);
+  --border-color-base--darker: rgba(255, 255, 255, 0.16);
+  --border-color-input: rgba(255, 255, 255, 0.1);
+  --border-color-input--hover: rgba(255, 255, 255, 0.5);
+  --background-color-primary--hover: hsl(var(--color-primary__h), 12%, 24%);
+  --background-color-primary--active: hsl(var(--color-primary__h), 12%, 28%);
+}
+
+:root[data-theme='dark'],
+:root.dark {
+  --ui-bg: var(--color-surface-0);
+  --ui-bg-muted: var(--color-surface-1);
+  --ui-bg-elevated: var(--color-surface-2);
+  --ui-bg-accented: var(--color-surface-3);
+  --ui-text: var(--color-base);
+  --ui-text-muted: var(--color-base--subtle);
+  --ui-text-toned: var(--color-base--subtle);
+  --ui-text-highlighted: var(--color-base--emphasized);
+  --ui-border: var(--border-color-base--darker);
+  --ui-border-muted: var(--border-color-base);
+  --ui-border-accented: var(--border-color-base--darker);
 }
 
 *,
@@ -111,6 +164,32 @@ button {
 button:active {
   background-color: var(--color-surface-2);
   transform: scale(0.95);
+}
+
+.question-filter-select-trigger {
+  width: max-content !important;
+  min-width: 0 !important;
+  max-width: min(18rem, calc(100vw - 1rem)) !important;
+  padding: 0.5rem 2.75rem 0.5rem 0.75rem !important;
+  justify-content: space-between !important;
+  box-sizing: border-box !important;
+}
+
+.question-filter-select-content {
+  width: var(--reka-select-trigger-width) !important;
+  min-width: 0 !important;
+  max-width: min(18rem, calc(100vw - 1rem)) !important;
+}
+
+.export-select-trigger,
+.export-select-content {
+  width: 8rem !important;
+  min-width: 8rem !important;
+  max-width: 8rem !important;
+}
+
+.export-select-trigger {
+  padding-right: 2.75rem !important;
 }
 
 .page-container-title {
