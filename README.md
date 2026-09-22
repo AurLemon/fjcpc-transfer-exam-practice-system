@@ -1,39 +1,35 @@
-# fjcpc-transfer-exam-practice-system
+# fjcpc-teps
 
 ![Demo](https://s2.loli.net/2024/10/26/AH7LoKVgkNWPJzq.jpg)
 
 ![Version](https://img.shields.io/badge/Release-3.0-yellow) ![License](https://img.shields.io/badge/license-MIT-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white) ![Vue.js](https://img.shields.io/badge/Vue.js%203-4FC08D?logo=vue.js&logoColor=white) ![NestJS](https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white)
 
-一个非官方的、简约的、基于 Vue、Nest 的船政转轨考刷题系统。
+一个非官方的、基于 Vue、Nest 的船政转轨考刷题系统。
 
 ## 声明
 
-我声明下，本项目仅用于全栈学习交流哈。没有别的目的，也没有商业用途，纯粹是练习，项目所使用的题目数据均来源于船政学院转轨考试中心，就算是爬取也很温柔，不暴力获取。
+本项目仅用于全栈学习交流。无其他目的也无商业用途。项目所使用的题目数据均来源于船政学院转轨考试中心。
 
 ## 技术
 
-基于 Vue、Nest 框架进行开发。包含一个简易的登录模块、用户模块、爬取题库模块等。
-
-题库数据来源于船政学院转轨考试中心，题目是多次爬取后去重、存入数据库。（勉强算中间层👍）
+基于 Vue、Nest 框架进行开发。包含一个简易的登录模块、用户模块、爬取题库模块等。题库数据来源于船政学院转轨考试中心，题目是多次爬取后去重、存入数据库。项目内配置了 Docker 方便快速构建产物。
 
 ## 部署
 
-- 项目采用 pnpm workspace 结构：后端在 backend 目录，前端在 frontend 目录。
+项目采用 pnpm workspace 结构。Nest 后端在 `backend`，Vue 前端在 `frontend`。生产环境需要 PostgreSQL 与 Redis，浏览器始终通过同源 `/api` 访问后端。
 
-1. 使用 `git clone https://github.com/AurLemon/fjcpc-transfer-exam-practice-system.git` 将仓库克隆到本地。
-   当然，也可以直接在 GitHub 页面上面，选择 Download 以下载整个仓库。对于仓库克隆目录的具体用法，可查阅 Git 使用教程。
+```bash
+pnpm install
+cp .env.example .env
+```
 
-2. 配置好 Node 环境后，进入项目目录，执行 `pnpm install` 安装依赖。
+在 `.env` 中填写 PostgreSQL、Redis 与随机的 `JWT_SECRET`。执行 migration 后再启动后端：
 
-3. 开发模式：
-
-- 后端：`pnpm backend:dev`
-- 前端：`pnpm frontend:dev`
-
-4. 生产构建：
-
-- 构建全部：`pnpm build`
-- 单独构建：`pnpm backend:build` / `pnpm frontend:build`
+```bash
+pnpm db:migrate
+pnpm backend:dev
+pnpm frontend:dev
+```
 
 ## 这是干嘛的？
 
@@ -67,7 +63,7 @@
 | V2     | 2024年5月3日 ~ 2024年5月13日 | 相对完善的能用的做题工具                | `jQuery`、`PHP` | https://v2.fjcpc-teps.aurlemon.top/ |
 | **V3** | 2024年11月10日               | 在V2的功能上继续添加功能，使用`Vue`重构 | `Vue`、`Nest`   | https://fjcpc-teps.aurlemon.top/    |
 
-未来就不考虑继续重构了，本身转轨考 V3 项目就是我第一次入门 Vue 3 + TS + 后端的项目，有些组件的封装和一些类型的标注都很糊弄，但是改起来又很复杂，以后就只维护了。~~感觉除了给自己的学弟用以外不会有其它专业的来。~~
+未来就不考虑继续重构了，本身转轨考 V3 项目就是我第一次入门 Vue 3 + TS + 后端的项目，有些组件的封装和一些类型的标注都很糊弄，但是改起来又很复杂，以后就只维护了。
 
 ## TODO List
 
@@ -93,7 +89,7 @@
 
 #### 2025-
 
-考虑到计应专业的 3+2 已经停招了…… 这个项目就暂时不加新功能或者未来重构了，有需求再加。
+考虑到计应专业的 3+2 已经停招了，这个项目就暂时不加新功能或者未来重构了。就这么让他沉寂吧。
 
 ## 联系我
 

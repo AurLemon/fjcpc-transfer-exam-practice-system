@@ -1,0 +1,15 @@
+[Unit]
+Description=FJCPC Transfer Exam Practice System
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/fjcpc-teps/dist
+ExecStart=/usr/bin/node /var/www/fjcpc-teps/dist/index.mjs
+Restart=on-failure
+RestartSec=5
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

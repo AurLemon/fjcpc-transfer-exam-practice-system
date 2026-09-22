@@ -444,36 +444,39 @@ export class UserController {
     qb.leftJoin('user_settings', 'userSetting', 'user.uuid = userSetting.user');
 
     qb.leftJoin(
-      `(SELECT user, COUNT(*) AS doneCount FROM done_questions GROUP BY user)`,
+      `(SELECT "user", COUNT(*) AS done_count FROM done_questions GROUP BY "user")`,
       'dq',
-      'dq.user = user.uuid',
+      'dq."user" = user.uuid',
     );
 
     qb.leftJoin(
-      `(SELECT user, COUNT(*) AS wrongCount FROM star_questions WHERE folder = 'wrong' GROUP BY user)`,
+      `(SELECT "user", COUNT(*) AS wrong_count FROM star_questions WHERE folder = 'wrong' GROUP BY "user")`,
       'sq',
-      'sq.user = user.uuid',
+      'sq."user" = user.uuid',
     );
 
     qb.addSelect(
       `(SELECT COUNT(*) FROM questions q WHERE q.course = 2 AND q.subject = user.profession_main_subject) + :course1Count`,
-      'totalQuestionsCount',
+      'total_questions_count',
     ).setParameter('course1Count', course1Count);
 
     qb.addSelect('user.uuid', 'uuid')
-      .addSelect('user.id_number', 'idNumber')
+      .addSelect('user.id_number', 'id_number')
       .addSelect('user.name', 'name')
       .addSelect('user.nick', 'nick')
       .addSelect('user.profession', 'profession')
       .addSelect('user.school', 'school')
-      .addSelect('user.profession_main_subject', 'mainProfessionSubject')
+      .addSelect('user.profession_main_subject', 'main_profession_subject')
       .addSelect('user.last_login', 'last_login')
       .addSelect('user.reg_date', 'reg_date')
       .addSelect('userSetting.setting', 'userSetting_setting')
-      .addSelect('dq.doneCount', 'doneQuestionsCount')
-      .addSelect('sq.wrongCount', 'starQuestionsCount');
+      .addSelect('dq.done_count', 'done_questions_count')
+      .addSelect('sq.wrong_count', 'star_questions_count');
 
     qb.groupBy('user.uuid');
+    qb.addGroupBy('userSetting.setting');
+    qb.addGroupBy('dq.done_count');
+    qb.addGroupBy('sq.wrong_count');
     qb.orderBy('user.reg_date', 'ASC');
 
     const usersWithStats = await qb.getRawMany();
@@ -482,28 +485,30 @@ export class UserController {
     for (const user of usersWithStats) {
       const {
         uuid,
-        idNumber,
+        id_number,
         name: encryptedName,
         nick,
         profession,
         school,
-        mainProfessionSubject,
+        main_profession_subject,
         last_login,
         reg_date,
-        doneQuestionsCount,
-        totalQuestionsCount,
-        starQuestionsCount,
+        done_questions_count,
+        total_questions_count,
+        star_questions_count,
       } = user;
 
       let modifiedName = null;
       const userSetting = user.userSetting_setting
-        ? JSON.parse(user.userSetting_setting)
+        ? typeof user.userSetting_setting === 'string'
+          ? JSON.parse(user.userSetting_setting)
+          : user.userSetting_setting
         : {};
 
       const showUserStat = userSetting?.show_user_stat ?? true;
       const showName = userSetting?.show_name ?? 'id_number';
 
-      if (idNumber && showUserStat && showName === 'id_number') {
+      if (id_number && showUserStat && showName === 'id_number') {
         try {
           const cacheKey = `user:${uuid}:decryptedName`;
           let decryptedName = await this.redisCacheService.get(cacheKey);
@@ -530,22 +535,22 @@ export class UserController {
 
       const userStatEntry = {
         uuid,
-        name: idNumber
+        name: id_number
           ? showUserStat && showName === 'id_number'
             ? modifiedName
             : null
           : null,
         nick: showUserStat ? (nick ? nick : null) : null,
-        profession: idNumber ? profession : null,
-        school: idNumber ? school : null,
-        main_profession_subject: mainProfessionSubject,
+        profession: id_number ? profession : null,
+        school: id_number ? school : null,
+        main_profession_subject,
         last_login: new Date(last_login).getTime(),
         reg_date: new Date(reg_date).getTime(),
         user_progress: {
-          current: parseInt(doneQuestionsCount ? doneQuestionsCount : 0),
-          total: parseInt(totalQuestionsCount ? totalQuestionsCount : 0),
+          current: parseInt(done_questions_count ? done_questions_count : 0),
+          total: parseInt(total_questions_count ? total_questions_count : 0),
         },
-        wrong_count: parseInt(starQuestionsCount ? starQuestionsCount : 0),
+        wrong_count: parseInt(star_questions_count ? star_questions_count : 0),
       };
 
       userStats.push(userStatEntry);

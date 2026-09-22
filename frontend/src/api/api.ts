@@ -21,7 +21,7 @@ interface AxiosConfig {
 
 // 创建 Axios 实例
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_BASE_API,
+  baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },

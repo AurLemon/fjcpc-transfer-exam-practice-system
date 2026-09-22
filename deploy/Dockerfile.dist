@@ -1,0 +1,28 @@
+FROM node:24-bookworm-slim AS builder
+
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+ENV HTTP_PROXY=${HTTP_PROXY}
+ENV HTTPS_PROXY=${HTTPS_PROXY}
+ENV PNPM_HOME=/pnpm
+ENV PATH=${PNPM_HOME}:${PATH}
+
+RUN corepack enable && corepack prepare pnpm@11.24.0 --activate
+WORKDIR /workspace
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY backend/package.json backend/package.json
+COPY frontend/package.json frontend/package.json
+RUN pnpm install --frozen-lockfile
+
+COPY . .
+RUN pnpm build
+RUN pnpm --filter fjcpc-teps-backend --prod --legacy deploy /artifact/server
+RUN cp -a backend/dist /artifact/server/dist
+RUN cp -a frontend/dist /artifact/public
+RUN cp .env.example /artifact/.env.example
+RUN printf "import './server/dist/main.js'\n" > /artifact/index.mjs
+RUN printf "import { spawnSync } from 'node:child_process'\nconst result = spawnSync(process.execPath, ['./server/node_modules/typeorm/cli.js', 'migration:run', '-d', './server/dist/database/data-source.js'], { stdio: 'inherit' })\nprocess.exit(result.status ?? 1)\n" > /artifact/migrate.mjs
+
+FROM scratch AS artifact
+COPY --from=builder /artifact /

@@ -12,9 +12,9 @@ import { RedisCacheService } from './redis.service';
       useFactory: async (configService: ConfigService) => ({
         type: 'single',
         options: {
-          host: configService.get('REDIS_HOST', 'localhost'),
-          port: configService.get('REDIS_PORT', 6379),
-          password: configService.get('REDIS_PASSWORD') || '',
+          host: configService.get('redis.host', 'localhost'),
+          port: configService.get('redis.port', 6379),
+          password: configService.get('redis.password') || '',
         },
       }),
     }),

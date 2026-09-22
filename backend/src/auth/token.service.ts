@@ -9,6 +9,7 @@ import * as jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { CryptoUtil } from '../common/crypto.util';
 import { UserService } from '../user/user.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class TokenService {
@@ -21,6 +22,7 @@ export class TokenService {
 
     private readonly userService: UserService,
     private readonly cryptoUtil: CryptoUtil,
+    private readonly configService: ConfigService,
   ) {}
 
   // 生成新的 access_token 和 refresh_token
@@ -58,7 +60,7 @@ export class TokenService {
         permission: user.permission,
         uuid: userUuid,
       },
-      'secret',
+      this.configService.getOrThrow<string>('jwt.secret'),
       { algorithm: 'HS256' },
     );
 
@@ -135,9 +137,13 @@ export class TokenService {
     }
 
     try {
-      const decoded = jwt.verify(access_token, 'secret', {
-        algorithms: ['HS256'],
-      });
+      const decoded = jwt.verify(
+        access_token,
+        this.configService.getOrThrow<string>('jwt.secret'),
+        {
+          algorithms: ['HS256'],
+        },
+      );
       const { uuid } = decoded as { uuid: string };
 
       const user = await this.userService.findUserByUuid(uuid);
@@ -219,9 +225,13 @@ export class TokenService {
     }
 
     try {
-      const decoded = jwt.verify(access_token, 'secret', {
-        algorithms: ['HS256'],
-      });
+      const decoded = jwt.verify(
+        access_token,
+        this.configService.getOrThrow<string>('jwt.secret'),
+        {
+          algorithms: ['HS256'],
+        },
+      );
       const { permission } = decoded as { permission: number }; // 提取权限
 
       return permission; // 返回用户权限

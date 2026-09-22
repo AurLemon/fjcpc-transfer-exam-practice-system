@@ -21,4 +21,8 @@ export class RedisCacheService {
   async delete(key: string): Promise<number> {
     return await this.redisClient.del(key);
   }
+
+  async ping(): Promise<string> {
+    return await this.redisClient.ping();
+  }
 }

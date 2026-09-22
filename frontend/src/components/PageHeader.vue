@@ -1,6 +1,5 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { useQuestionStore } from '@/stores/question'
 import { useCardStore } from '@/stores/card'
 
 export default defineComponent({
@@ -11,10 +10,8 @@ export default defineComponent({
     },
   },
   setup() {
-    const questionStore = useQuestionStore()
     const cardStore = useCardStore()
     return {
-      questionStore,
       cardStore,
     }
   },
@@ -28,7 +25,7 @@ export default defineComponent({
   >
     <div class="page-menu-wrapper">
       <div class="page-menu-title" @click="showMobilePanel">
-        计大船政转轨考の刷题系统3.0
+        计大船政转轨考の刷题系统3.1
       </div>
       <div class="page-menu-list">
         <div class="page-menu-link">
@@ -54,26 +51,6 @@ export default defineComponent({
               alt="Gitee 项目地址"
             />
           </a>
-        </div>
-        <div
-          class="page-menu-commit"
-          v-if="questionStore.questionInfo.git_info.local_commit !== ''"
-          v-tippy="{
-            content:
-              questionStore.questionInfo.git_info.recent_commit === 'both'
-                ? '当前项目的本地仓库的进度与远程仓库一致'
-                : '当前项目已滞后，需要部署项目的人员更新项目',
-          }"
-        >
-          {{ questionStore.questionInfo.git_info.local_commit.slice(0, 8) }}
-          <div
-            class="page-menu-commit__status"
-            :class="{
-              inc:
-                questionStore.questionInfo.git_info.recent_commit === 'repo' ||
-                questionStore.questionInfo.git_info.recent_commit === 'local',
-            }"
-          ></div>
         </div>
       </div>
     </div>
@@ -151,30 +128,6 @@ export default defineComponent({
     display: flex;
     align-items: center;
     gap: var(--gap-value);
-
-    .page-menu-commit {
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      color: var(--color-base--subtle);
-      font-size: 12px;
-      padding: 2px 6px;
-      border: 1px solid var(--border-color-base--darker);
-      border-radius: 4px;
-
-      .page-menu-commit__status {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: var(--success-color);
-        box-shadow: 0 0 32px 1px var(--success-color);
-
-        &.inc {
-          background: var(--failed-color);
-          box-shadow: 0 0 32px 1px var(--failed-color);
-        }
-      }
-    }
 
     .page-menu-link {
       border-radius: 50%;

@@ -7,7 +7,7 @@ export class UserSetting {
   @PrimaryColumn('uuid')
   user: string; // 用户 UUID
 
-  @Column('json')
+  @Column('jsonb')
   setting: any; // 只存储用户修改过的设置
 
   @Column({ type: 'timestamp' })

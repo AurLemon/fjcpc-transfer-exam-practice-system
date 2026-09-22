@@ -1,35 +1,80 @@
 // src/config/config.ts
 
-export default () => {
+const parseBoolean = (value: string | undefined, fallback: boolean) => {
+  if (value === undefined) {
+    return fallback;
+  }
+
+  return value.trim().toLowerCase() === 'true';
+};
+
+const resolveEstimatedExamTime = (value: string | undefined): string => {
+  const normalizedValue = value?.trim() || '05-15';
+  const match = normalizedValue.match(/^(?:\d{4}-)?(\d{2})-(\d{2})$/);
+
+  if (!match) {
+    throw new Error(
+      'EXAM_TIME must use MM-DD for estimated dates, for example 05-15.',
+    );
+  }
+
+  const month = Number(match[1]);
+  const day = Number(match[2]);
   const today = new Date();
-  const currentYear = today.getFullYear();
-  const examDateThisYear = new Date(currentYear, 4, 15);
-  const examYear = today > examDateThisYear ? currentYear + 1 : currentYear;
+  const todayAtStart = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
+  let year = today.getFullYear();
+  let candidate = new Date(year, month - 1, day);
+
+  if (candidate.getMonth() !== month - 1 || candidate.getDate() !== day) {
+    throw new Error('EXAM_TIME must contain a valid calendar date.');
+  }
+
+  if (candidate < todayAtStart) {
+    year += 1;
+    candidate = new Date(year, month - 1, day);
+  }
+
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+};
+
+export default () => {
+  const examTimeIsConfirmed = parseBoolean(process.env.EXAM_TRUST, false);
+  const configuredExamTime = process.env.EXAM_TIME?.trim() || '05-15';
+
+  const examTime = examTimeIsConfirmed
+    ? configuredExamTime
+    : resolveEstimatedExamTime(configuredExamTime);
+
+  if (examTimeIsConfirmed && !/^\d{4}-\d{2}-\d{2}$/.test(configuredExamTime)) {
+    throw new Error('EXAM_TIME must use YYYY-MM-DD when EXAM_TRUST=true.');
+  }
 
   return {
     port: parseInt(process.env.PORT, 10) || 3000,
     database: {
-      type: process.env.DB_TYPE || 'sqlite',
       host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT, 10) || 3306,
-      user: process.env.DB_USER || 'root',
+      port: parseInt(process.env.DB_PORT, 10) || 5432,
+      user: process.env.DB_USER || 'fjcpc-teps',
       password: process.env.DB_PASSWORD || '',
-      name: process.env.DB_NAME || 'test',
-      sqlitePath: process.env.SQLITE_PATH || './database/sqlite.db',
+      name: process.env.DB_NAME || 'fjcpc-teps',
+      ssl: parseBoolean(process.env.DB_SSL, false),
       requestTimesPerRound: process.env.REQ_TIMES_ROUND || '60',
     },
-    exam_info: {
-      exam_time: process.env.EXAM_TIME || `${examYear}-05-15`,
-      exam_trust: Boolean(process.env.EXAM_TRUST) || false,
+    redis: {
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT, 10) || 6379,
+      password: process.env.REDIS_PASSWORD || '',
     },
-    git_info: {
-      local_commit: process.env.LOCAL_COMMIT_HASH || null,
-      repo_commit: process.env.REPO_COMMIT_HASH || null,
-      local_commit_time: process.env.LOCAL_COMMIT_TIME || null,
-      repo_commit_time: process.env.REPO_COMMIT_TIME || null,
-      local_commit_message: process.env.LOCAL_COMMIT_MESSAGE || null,
-      repo_commit_message: process.env.REPO_COMMIT_MESSAGE || null,
-      recent_commit: process.env.RECENT_COMMIT || null,
+    jwt: {
+      secret: process.env.JWT_SECRET || '',
+    },
+    exam_info: {
+      exam_time: examTime,
+      exam_trust: examTimeIsConfirmed,
     },
   };
 };

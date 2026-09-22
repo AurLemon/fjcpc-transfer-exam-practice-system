@@ -1,18 +1,3 @@
-<script lang="ts">
-import { defineComponent } from 'vue'
-import { useQuestionStore } from '@/stores/question'
-
-export default defineComponent({
-  name: 'AboutView',
-  setup() {
-    const questionStore = useQuestionStore()
-    return {
-      questionStore,
-    }
-  },
-})
-</script>
-
 <template>
   <div class="page-container-slide page-about">
     <div class="page-container-title">关于</div>
@@ -21,16 +6,6 @@ export default defineComponent({
         FJCPC Transfer Exam Practice System
       </div>
       <div class="page-about-github__desc">给需要转轨考的朋友准备的喵</div>
-      <div class="page-about-github__info">
-        <div
-          class="page-about-github__version"
-          v-if="questionStore.questionInfo.git_info.local_commit"
-        >
-          v3.0.0 ({{
-            questionStore.questionInfo.git_info.local_commit.slice(0, 8)
-          }})
-        </div>
-      </div>
       <div class="page-about-github__links">
         <a
           class="page-about-github__link"
@@ -260,23 +235,6 @@ export default defineComponent({
     .page-about-github__desc {
       color: var(--color-base--subtle);
       font-size: 14px;
-    }
-
-    .page-about-github__info {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 1rem;
-      margin-top: 0.5rem;
-
-      .page-about-github__version {
-        font-size: 14px;
-        font-family: 'JetBrains Mono';
-        padding: 2px 4px;
-        border: 1px solid var(--border-color-base);
-        border-radius: 4px;
-        background: var(--color-surface-2);
-      }
     }
 
     .page-about-github__links {

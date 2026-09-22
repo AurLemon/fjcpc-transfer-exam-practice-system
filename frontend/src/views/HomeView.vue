@@ -1,12 +1,9 @@
 <script lang="ts" setup>
 import { RouterLink } from 'vue-router'
-import dayjs from 'dayjs'
 
 import { useCardStore } from '@/stores/card'
-import { useQuestionStore } from '@/stores/question'
 
 const cardStore = useCardStore()
-const questionStore = useQuestionStore()
 
 const openLoginCard = () => {
   cardStore.showLoginCard = true
@@ -33,27 +30,6 @@ const openLoginCard = () => {
           src="@/assets/images/favicon.png"
           v-tippy="{ content: '致敬传奇主唱井芹仁菜' }"
         />
-      </div>
-    </div>
-    <div
-      class="page-guide-git"
-      v-if="
-        questionStore.questionInfo.git_info.repo_commit_time &&
-        questionStore.questionInfo.git_info.repo_commit_time
-      "
-    >
-      题库将于4月22日起每日自动获取更新，去年的新题型以专业课的数据库为主。
-      <div class="message">
-        网站最近更新时间为
-        {{
-          dayjs(
-            parseInt(questionStore.questionInfo.git_info.repo_commit_time) *
-              1000,
-          ).format('YYYY-MM-DD HH:mm:ss')
-        }}
-        （{{ questionStore.questionInfo.git_info.repo_commit.slice(0, 8) }}，{{
-          questionStore.questionInfo.git_info.repo_commit_message
-        }}）
       </div>
     </div>
     <div class="page-guide-content">
@@ -257,30 +233,6 @@ const openLoginCard = () => {
       &:active {
         transform: scale(0.98);
         transition-duration: 150ms;
-      }
-    }
-  }
-
-  .page-guide-git {
-    color: var(--color-base--subtle);
-    font-size: 12px;
-    font-weight: 500;
-    text-align: center;
-    margin: 1rem 0;
-
-    @include screen.media-screen(phone) {
-      margin-top: 2rem;
-    }
-
-    .message {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-
-      @include screen.media-screen(phone) {
-        white-space: unset;
-        overflow: unset;
-        text-overflow: unset;
       }
     }
   }

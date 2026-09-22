@@ -41,10 +41,9 @@ const cardStore = useCardStore()
       </div>
     </div>
     <div class="page-footer-copyright">
-      This project based on Vue.js + Nest.js under License MIT, coding and
-      design by AurLemon. ©
-      {{ dayjs().year() > 2024 ? `2024 - ${dayjs().year()}` : 2024 }} AurLemon
-      All rights reserved.
+      ©
+      {{ dayjs().year() > 2024 ? `2024 - ${dayjs().year()}` : 2024 }}
+      AurLemon. Built with Vue.js and NestJS. Licensed under the MIT License.
     </div>
   </footer>
 </template>

@@ -409,36 +409,6 @@ const saveNick = async () => {
                 </div>
             </div>
         </div>
-        <div class="page-advanced-statement" v-if="questionStore.questionInfo.git_info.repo_commit !== ''">
-            <div class="status" v-if="questionStore.questionInfo.git_info.recent_commit === 'both'">
-                <span class="material-icons">done</span>
-                当前项目的本地仓库的进度与远程仓库一致。
-            </div>
-            <div class="status" v-else-if="questionStore.questionInfo.git_info.recent_commit === 'repo'">
-                <span class="material-icons">warning</span>
-                当前项目已滞后，需要站长更新项目。
-            </div>
-            <div class="status" v-else>
-                <span class="material-icons">refresh</span>
-                当前项目进度不属于远程仓库。
-            </div>
-            <div class="context">
-                项目仓库最新提交记录为
-                <span class="commit">
-                    <a :href="`https://github.com/AurLemon/fjcpc-transfer-exam-practice-system/commit/${questionStore.questionInfo.git_info.repo_commit}`">
-                        {{ questionStore.questionInfo.git_info.repo_commit }}（{{
-                            dayjs(parseInt(questionStore.questionInfo.git_info.repo_commit_time) * 1000).format('YYYY-MM-DD HH:mm:ss')
-                        }}）
-                    </a>
-                </span>
-                ，当前站点项目的提交记录为
-                <span class="commit"
-                    >{{ questionStore.questionInfo.git_info.local_commit }}（{{
-                        dayjs(parseInt(questionStore.questionInfo.git_info.local_commit_time) * 1000).format('YYYY-MM-DD HH:mm:ss')
-                    }}）</span
-                >。
-            </div>
-        </div>
     </div>
 </template>
 
@@ -771,43 +741,5 @@ const saveNick = async () => {
         }
     }
 
-    .page-advanced-statement {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.25rem;
-        color: var(--color-surface-4);
-        font-size: 12px;
-
-        .status {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            color: var(--color-base--subtle);
-            font-size: 14px;
-            font-weight: 600;
-
-            .material-icons {
-                font-size: 18px;
-            }
-        }
-
-        .context {
-            word-break: break-all;
-        }
-
-        .commit {
-            color: hsla(var(--color-primary__h), var(--color-primary__s), var(--color-primary__l), 0.7);
-            margin: 0 4px;
-
-            a {
-                color: hsla(var(--color-primary__h), var(--color-primary__s), var(--color-primary__l), 0.7);
-                text-decoration: none;
-
-                &:hover {
-                    color: hsla(var(--color-primary__h), var(--color-primary__s), var(--color-primary__l), 0.9);
-                }
-            }
-        }
-    }
 }
 </style>

@@ -65,15 +65,12 @@ export class ExportService {
         .andWhere('question.content NOT LIKE :imagePattern', {
           imagePattern: '%<img%',
         })
-        .andWhere('question.options NOT LIKE :imagePattern', {
+        .andWhere('CAST(question.options AS text) NOT ILIKE :imagePattern', {
           imagePattern: '%<img%',
         });
     }
 
-    return query
-      .orderBy('RAND()') // MySQL特定的随机排序
-      .limit(count)
-      .getMany();
+    return query.orderBy('RANDOM()').limit(count).getMany();
   }
 
   /**

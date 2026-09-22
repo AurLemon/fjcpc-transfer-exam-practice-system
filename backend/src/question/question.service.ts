@@ -333,15 +333,6 @@ export class QuestionService {
         exam_time: examTime,
         exam_trust: examTrust,
       },
-      git_info: {
-        local_commit: config().git_info.local_commit,
-        repo_commit: config().git_info.repo_commit,
-        local_commit_time: config().git_info.local_commit_time,
-        repo_commit_time: config().git_info.repo_commit_time,
-        local_commit_message: config().git_info.local_commit_message,
-        repo_commit_message: config().git_info.repo_commit_message,
-        recent_commit: config().git_info.recent_commit,
-      },
     };
   }
 
@@ -494,23 +485,20 @@ export class QuestionService {
       .createQueryBuilder('question')
       .where(
         new Brackets((qb) => {
-          qb.where('question.content LIKE :keyword', {
+          qb.where('question.content ILIKE :keyword', {
             keyword: `%${escapedKeyword}%`,
           })
+            .orWhere('CAST(question.options AS text) ILIKE :optionKeyword', {
+              optionKeyword: `%${escapedKeyword}%`,
+            })
             .orWhere(
-              `JSON_EXTRACT(question.options, '$[*].txt') LIKE :optionKeyword`,
-              {
-                optionKeyword: `%${escapedKeyword}%`,
-              },
-            )
-            .orWhere(
-              `JSON_EXTRACT(question.sub_options, '$[*].tg') LIKE :subOptionKeyword`,
+              'CAST(question.sub_options AS text) ILIKE :subOptionKeyword',
               {
                 subOptionKeyword: `%${escapedKeyword}%`,
               },
             )
             .orWhere(
-              `JSON_EXTRACT(question.sub_options, '$[*].list[*].txt') LIKE :subOptionListKeyword`,
+              'CAST(question.sub_options AS text) ILIKE :subOptionListKeyword',
               {
                 subOptionListKeyword: `%${escapedKeyword}%`,
               },

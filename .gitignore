@@ -43,7 +43,7 @@ lerna-debug.log*
 .env.test.local
 .env.production.local
 .env.local
-!frontend/.env
+!.env.example
 
 # temp directory
 .temp
@@ -62,3 +62,6 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 public/
 /frontend/node_modules
 /frontend/dist
+
+# Deployment builder
+/.dist-tmp

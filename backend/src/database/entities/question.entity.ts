@@ -1,10 +1,10 @@
 // src/database/entities/question.entity
 
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryColumn, Column } from 'typeorm';
 
 @Entity('questions')
 export class Question {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn({ type: 'varchar', length: 36 })
   unique_code: string; // 题目唯一编号
 
   @Column({ type: 'varchar', length: 255 })
@@ -16,13 +16,13 @@ export class Question {
   @Column('int')
   type: number; // 题目类型（源 API 的 dtlx 字段）
 
-  @Column('json', { nullable: true })
+  @Column('jsonb', { nullable: true })
   options: any; // 题目选项（源 API 的 list 数组）
 
-  @Column('json', { nullable: true })
+  @Column('jsonb', { nullable: true })
   sub_options: any; // 子题目选项（针对答案多次嵌套的，比如源 API 中 dtlx 为 8 的）
 
-  @Column('json')
+  @Column('jsonb')
   answer: string[][] | string[]; // 正确答案（源 API 的 zqda 字段，解析后重构存入）
 
   @Column('int')
