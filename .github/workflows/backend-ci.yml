@@ -31,13 +31,13 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Enable corepack
         run: corepack enable
 
       - name: Activate pnpm
-        run: corepack prepare pnpm@10 --activate
+        run: corepack prepare pnpm@11.24.0 --activate
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
