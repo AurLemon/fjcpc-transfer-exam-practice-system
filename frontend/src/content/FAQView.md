@@ -319,17 +319,6 @@
 
 也有线下选修课，比如日语、英语四级辅导、德语…… 但反正很水，真学不到东西，建议线上选个课就行了。
 
-好奇选修课名单？看这里：
-
-<div class="flex gap-[0.5rem] md:flex-row flex-col">
-<div class="h-[30rem] w-full overflow-y-auto">
-</div>
-<div class="h-[30rem] w-full overflow-y-auto">
-</div>
-</div>
-
-更具体的通知我放最底下了。
-
 </div>
 </div>
 

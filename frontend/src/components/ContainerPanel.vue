@@ -264,13 +264,16 @@ export default defineComponent({
         v-if="!userStore.login.isLogged"
       >
         <div class="container-panel-profile-login__title">未登录</div>
-        <button
+        <UButton
+          color="primary"
+          variant="solid"
+          class="container-panel-profile-login__button"
           @click="handleLoginCard('open')"
-          :class="{ disabled: cardStore.showLoginCard }"
+          :disabled="cardStore.showLoginCard"
         >
           <div class="info" v-if="!cardStore.showLoginCard">打开登录面板</div>
           <div class="info" v-else>请在登录面板内操作</div>
-        </button>
+        </UButton>
       </div>
       <div
         class="container-panel-profile-wrapper container-panel-profile-loading"
@@ -402,21 +405,8 @@ export default defineComponent({
           font-weight: 600;
         }
 
-        button {
-          color: var(--color-surface-0);
-          background: var(--color-primary);
-          cursor: pointer;
+        :deep(.container-panel-profile-login__button) {
           transition-duration: 250ms;
-
-          &:hover {
-            background: var(--color-base--subtle);
-          }
-
-          &.disabled {
-            color: var(--color-base--subtle);
-            background: var(--background-color-primary--hover);
-            cursor: not-allowed;
-          }
         }
       }
 

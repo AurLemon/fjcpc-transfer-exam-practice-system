@@ -183,7 +183,8 @@ watch(loadStatus, (newStatus) => {
           :class="{ disabled: loadStatus === 'loading' }"
         >
           <label>身份证或昵称</label>
-          <input
+          <UInput
+            class="view-login-input"
             type="text"
             placeholder="请输入身份证号或昵称"
             v-model="account"
@@ -196,7 +197,8 @@ watch(loadStatus, (newStatus) => {
           :class="{ disabled: loadStatus === 'loading' }"
         >
           <label>登录码</label>
-          <input
+          <UInput
+            class="view-login-input"
             type="password"
             placeholder="请输入6位数字的登录码"
             v-model="password"
@@ -205,9 +207,12 @@ watch(loadStatus, (newStatus) => {
           />
         </div>
         <div class="view-login-form__login">
-          <button
+          <UButton
+            class="view-login-submit"
+            color="primary"
+            variant="solid"
             @click="fetchData"
-            :class="{ disabled: loadStatus === 'loading' }"
+            :disabled="loadStatus === 'loading'"
           >
             登录
             <div
@@ -228,7 +233,7 @@ watch(loadStatus, (newStatus) => {
             >
               close
             </div>
-          </button>
+          </UButton>
           <div class="view-login-form__loading">
             <div class="loading-info">{{ loadingInfo }}</div>
           </div>
@@ -306,15 +311,12 @@ watch(loadStatus, (newStatus) => {
         user-select: none;
       }
 
-      input {
-        font-size: 14px;
+      :deep(.view-login-input) {
         min-width: 200px;
-        background: var(--color-surface-0);
-        outline: 2px solid transparent;
-        transition: 250ms ease;
 
-        &:focus {
-          outline: 2px solid var(--color-primary);
+        input {
+          font-size: 14px;
+          transition: 250ms ease;
         }
 
         @include screen.media-screen(mobile) {
@@ -335,29 +337,16 @@ watch(loadStatus, (newStatus) => {
       margin: 2rem auto 0 auto;
       position: relative;
 
-      button {
+      :deep(.view-login-submit) {
         display: flex;
         justify-content: center;
         align-items: center;
         gap: 0.25rem;
-        color: var(--color-surface-0);
         width: 150px;
-        background: var(--color-primary);
-        cursor: pointer;
         transition: 150ms ease;
 
         &:hover {
-          background: var(--color-base--subtle);
           box-shadow: 0 1px 5px var(--border-color-base--darker);
-        }
-
-        &:active {
-          transform: scale(0.98);
-        }
-
-        &.disabled {
-          filter: grayscale(1);
-          cursor: not-allowed;
         }
 
         @keyframes loading {

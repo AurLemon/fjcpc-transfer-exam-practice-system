@@ -33,15 +33,15 @@ applyTheme(isDarkMode.value)
         计大船政转轨考の刷题系统3.1
       </div>
       <div class="page-menu-list">
-        <button
-          class="page-menu-theme-toggle material-icons -mr-1"
-          type="button"
+        <UButton
+          class="page-menu-theme-toggle -mr-1"
+          :icon="isDarkMode ? 'i-lucide-sun' : 'i-lucide-moon'"
+          color="neutral"
+          variant="ghost"
           :aria-label="isDarkMode ? '切换浅色模式' : '切换深色模式'"
           v-tippy="{ content: isDarkMode ? '浅色模式' : '深色模式' }"
           @click="toggleDarkMode"
-        >
-          {{ isDarkMode ? 'light_mode' : 'dark_mode' }}
-        </button>
+        />
         <div class="page-menu-link">
           <a
             href="https://www.fjcpc.edu.cn/"

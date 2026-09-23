@@ -1400,13 +1400,15 @@ onBeforeUnmount(() => {
         </div>
       </div>
       <div class="question-render-tools__options">
-        <button
+        <UButton
           v-if="isDirectQuestionMode"
           @click="exitDirectMode"
+          color="primary"
+          variant="solid"
           class="exit-direct-mode-btn"
         >
           退出单题模式
-        </button>
+        </UButton>
         <USelect
           v-model="userSetting.course"
           :items="courseItems"
@@ -1989,30 +1991,22 @@ onBeforeUnmount(() => {
         }
       }
 
-      button {
+      :deep(.exit-direct-mode-btn) {
         display: flex;
         align-items: center;
         gap: 0.25rem;
-        color: var(--color-surface-0);
         font-size: 14px;
-        background: var(--color-primary);
         box-shadow: 0 2px 8px var(--border-color-base);
         margin: 0 2rem;
         margin-bottom: auto;
         padding: 6px 16px;
-        cursor: pointer;
 
         @include screen.media-screen(phone) {
           margin: 0;
         }
 
-        .material-icons {
-          color: var(--color-surface-0);
-          font-size: 18px;
-        }
-
         &:hover {
-          background: var(--color-base--subtle);
+          filter: brightness(1.05);
         }
       }
     }
@@ -2024,13 +2018,10 @@ onBeforeUnmount(() => {
       gap: 0.25rem;
 
       .exit-direct-mode-btn {
-        color: var(--color-surface-0);
-        background: var(--color-primary);
         transition: 250ms;
 
         &:hover {
-          cursor: pointer;
-          background: var(--color-base--subtle);
+          filter: brightness(1.05);
         }
       }
 

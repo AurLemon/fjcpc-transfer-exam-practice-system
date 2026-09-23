@@ -143,7 +143,8 @@ watch(loadStatus, (newStatus) => {
           :class="{ disabled: loadStatus === 'loading' }"
         >
           <label>身份证</label>
-          <input
+          <UInput
+            class="view-auth-input"
             type="text"
             placeholder="请输入身份证号"
             v-model="id_number"
@@ -156,7 +157,8 @@ watch(loadStatus, (newStatus) => {
           :class="{ disabled: loadStatus === 'loading' }"
         >
           <label>姓名</label>
-          <input
+          <UInput
+            class="view-auth-input"
             type="text"
             placeholder="请输入姓名"
             v-model="realname"
@@ -168,8 +170,9 @@ watch(loadStatus, (newStatus) => {
           :class="{ disabled: loadStatus === 'loading' }"
         >
           <label>新密码</label>
-          <input
-            type="name"
+          <UInput
+            class="view-auth-input"
+            type="password"
             placeholder="请输入新密码"
             v-model="password"
             maxlength="6"
@@ -177,9 +180,12 @@ watch(loadStatus, (newStatus) => {
           />
         </div>
         <div class="view-auth-form__login">
-          <button
+          <UButton
+            class="view-auth-submit"
+            color="primary"
+            variant="solid"
             @click="fetchData"
-            :class="{ disabled: loadStatus === 'loading' }"
+            :disabled="loadStatus === 'loading'"
           >
             更新
             <div
@@ -200,7 +206,7 @@ watch(loadStatus, (newStatus) => {
             >
               close
             </div>
-          </button>
+          </UButton>
           <div class="view-auth-form__loading">
             <div class="loading-info">{{ loadingInfo }}</div>
           </div>
@@ -271,15 +277,12 @@ watch(loadStatus, (newStatus) => {
         user-select: none;
       }
 
-      input {
-        font-size: 14px;
+      :deep(.view-auth-input) {
         min-width: 200px;
-        background: var(--color-surface-0);
-        outline: 2px solid transparent;
-        transition: 250ms ease;
 
-        &:focus {
-          outline: 2px solid var(--color-primary);
+        input {
+          font-size: 14px;
+          transition: 250ms ease;
         }
 
         @include screen.media-screen(mobile) {
@@ -300,29 +303,16 @@ watch(loadStatus, (newStatus) => {
       margin: 2rem auto 0 auto;
       position: relative;
 
-      button {
+      :deep(.view-auth-submit) {
         display: flex;
         justify-content: center;
         align-items: center;
         gap: 0.25rem;
-        color: var(--color-surface-0);
         width: 150px;
-        background: var(--color-primary);
-        cursor: pointer;
         transition: 150ms ease;
 
         &:hover {
-          background: var(--color-base--subtle);
           box-shadow: 0 1px 5px var(--border-color-base--darker);
-        }
-
-        &:active {
-          transform: scale(0.98);
-        }
-
-        &.disabled {
-          filter: grayscale(1);
-          cursor: not-allowed;
         }
 
         @keyframes loading {

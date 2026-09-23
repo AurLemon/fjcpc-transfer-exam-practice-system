@@ -1249,22 +1249,31 @@ onBeforeUnmount(() => {
             </div>
           </div>
         </div>
-        <button
+        <UButton
           @click="checkAnswer"
           v-if="!showAnswer"
+          color="primary"
+          variant="solid"
+          class="question-answer-action"
+          icon="i-lucide-list-check"
           v-tippy="{
             appendTo: 'parent',
             content:
               '其实电脑上可以按左右键切题和回车键确定题目哦，点来点去有点累。',
           }"
         >
-          <span class="material-icons">library_add_check</span>
           检查
-        </button>
-        <button @click="nextQuestion" v-else>
-          <span class="material-icons">fast_forward</span>
+        </UButton>
+        <UButton
+          @click="nextQuestion"
+          v-else
+          color="primary"
+          variant="solid"
+          class="question-answer-action"
+          icon="i-lucide-fast-forward"
+        >
           下一题
-        </button>
+        </UButton>
       </div>
       <div class="question-render-tools__options">
         <USelect
@@ -1814,30 +1823,22 @@ onBeforeUnmount(() => {
         }
       }
 
-      button {
+      :deep(.question-answer-action) {
         display: flex;
         align-items: center;
         gap: 0.25rem;
-        color: var(--color-surface-0);
         font-size: 14px;
-        background: var(--color-primary);
         box-shadow: 0 2px 8px var(--border-color-base);
         margin: 0 2rem;
         margin-bottom: auto;
         padding: 6px 16px;
-        cursor: pointer;
 
         @include screen.media-screen(phone) {
           margin: 0;
         }
 
-        .material-icons {
-          color: var(--color-surface-0);
-          font-size: 18px;
-        }
-
         &:hover {
-          background: var(--color-base--subtle);
+          filter: brightness(1.05);
         }
       }
     }

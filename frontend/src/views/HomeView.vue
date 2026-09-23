@@ -103,7 +103,8 @@ const openLoginCard = () => {
     <div class="page-guide-statement">
       <div class="material-icons">warning</div>
       <div class="context">
-        项目已归档，有需要可联系开发者邮箱<span class="email"
+        项目仅在 2024 与 2025 年内使用，目前已归档，有需要可联系开发者邮箱<span
+          class="email"
           >2115386831@qq.com</span
         >。
       </div>
@@ -114,7 +115,14 @@ const openLoginCard = () => {
           船政系统里有账号？可以登录看看
         </div>
         <div class="page-guide-guide__container">
-          <button @click="openLoginCard">打开登录面板</button>
+          <UButton
+            class="page-guide-login-button"
+            color="primary"
+            variant="solid"
+            @click="openLoginCard"
+          >
+            打开登录面板
+          </UButton>
         </div>
       </div>
       <div class="page-guide-links">
@@ -353,20 +361,17 @@ const openLoginCard = () => {
     }
 
     .page-guide-link,
-    button {
+    :deep(.page-guide-login-button) {
       color: var(--color-surface-0);
       font-size: 14px;
       text-decoration: none;
       padding: 2px 10px;
       margin: 0;
-      border: 1px solid var(--border-color-base);
       border-radius: 16px;
-      background: var(--color-primary);
-      cursor: pointer;
       transition: 250ms ease;
 
       &:hover {
-        background: var(--color-base--subtle);
+        filter: brightness(1.05);
       }
 
       &:active {
