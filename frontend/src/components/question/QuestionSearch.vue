@@ -131,26 +131,44 @@ onMounted(() => {
   <div class="question-search-page">
     <div class="search-container">
       <div class="search-input-container">
-        <input type="text" v-model="keyword" placeholder="搜索题目内容..." />
-        <div class="search-icon" @click="searchQuestions">
-          <i class="fa fa-search"></i>
-        </div>
+        <UInput
+          v-model="keyword"
+          variant="none"
+          class="search-field"
+          placeholder="搜索题目内容..."
+          @keyup.enter="searchQuestions"
+        />
+        <UButton
+          icon="i-lucide-search"
+          class="search-button"
+          aria-label="搜索"
+          @click="searchQuestions"
+        >
+          搜索
+        </UButton>
       </div>
 
-      <div class="search-filters">
-        <select v-model="searchParams.course" @change="searchQuestions">
-          <option value="-1">所有课程</option>
-          <option value="1">文化基础</option>
-          <option value="2">专业基础</option>
-        </select>
-
-        <select v-model="searchParams.type" @change="searchQuestions">
-          <option value="-1">所有题型</option>
-          <option value="1">单选题</option>
-          <option value="2">多选题</option>
-          <option value="3">判断题</option>
-          <option value="8">阅读题</option>
-        </select>
+      <div class="search-filters" aria-label="搜索筛选条件">
+        <USelect
+          v-model="searchParams.course"
+          :items="[
+            { label: '所有课程', value: -1 },
+            { label: '文化基础', value: 1 },
+            { label: '专业基础', value: 2 },
+          ]"
+          @update:model-value="searchQuestions"
+        />
+        <USelect
+          v-model="searchParams.type"
+          :items="[
+            { label: '所有题型', value: -1 },
+            { label: '单选题', value: 0 },
+            { label: '多选题', value: 1 },
+            { label: '判断题', value: 2 },
+            { label: '阅读题', value: 8 },
+          ]"
+          @update:model-value="searchQuestions"
+        />
       </div>
     </div>
 
@@ -192,23 +210,27 @@ onMounted(() => {
         </div>
 
         <div class="pagination" v-if="totalPages > 1">
-          <button
+          <UButton
+            color="neutral"
+            variant="outline"
             :disabled="searchParams.page <= 1"
             @click="prevPage"
             class="pagination-btn"
           >
             上一页
-          </button>
+          </UButton>
           <span class="page-info"
             >{{ searchParams.page }} / {{ totalPages }}</span
           >
-          <button
+          <UButton
+            color="neutral"
+            variant="outline"
             :disabled="searchParams.page >= totalPages"
             @click="nextPage"
             class="pagination-btn"
           >
             下一页
-          </button>
+          </UButton>
         </div>
       </template>
     </div>
@@ -220,65 +242,69 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   width: 100%;
+  max-width: 960px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 0.5rem 1.25rem 2rem;
 
   .search-container {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    margin-bottom: 25px;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0 1rem;
+    margin-bottom: 1rem;
 
     .search-input-container {
-      position: relative;
       width: 100%;
+      max-width: 860px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.375rem;
+      border: 1px solid var(--border-color-base--darker);
+      border-radius: 9999px;
+      background: var(--color-surface-0);
+      box-shadow: 0 4px 18px hsla(var(--color-primary__h), 30%, 20%, 0.08);
+      transition:
+        border-color 180ms ease,
+        box-shadow 180ms ease;
 
-      input {
-        width: 100%;
-        padding: 12px 45px 12px 20px;
-        border: 1px solid var(--border-color-base--darker);
-        border-radius: 25px;
-        font-size: 16px;
-        outline: none;
-        transition:
-          border-color 0.2s,
-          box-shadow 0.2s;
-
-        &:focus {
-          border-color: var(--color-primary);
-          box-shadow: 0 0 0 3px var(--background-color-primary--active);
-        }
+      &:focus-within {
+        border-color: var(--color-primary);
+        box-shadow:
+          0 0 0 3px hsla(var(--color-primary__h), 55%, 48%, 0.14),
+          0 6px 22px hsla(var(--color-primary__h), 30%, 20%, 0.1);
       }
 
-      .search-icon {
-        position: absolute;
-        right: 18px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--color-base);
-        cursor: pointer;
+      :deep(.search-field) {
+        flex: 1;
+        min-width: 0;
+      }
 
-        &:hover {
-          color: var(--color-primary);
-        }
+      :deep(input) {
+        width: 100%;
+        min-height: 2.8rem;
+        padding-inline: 1rem;
+        font-size: 1.05rem;
+      }
+
+      .search-button {
+        flex: 0 0 auto;
+        min-height: 2.8rem;
+        padding-inline: 1.25rem;
+        border-radius: 9999px;
       }
     }
 
     .search-filters {
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
-      gap: 15px;
+      gap: 0.75rem;
 
-      select {
-        padding: 8px 15px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        outline: none;
-        cursor: pointer;
-
-        &:focus {
-          border-color: var(--color-primary);
-        }
+      :deep(button) {
+        min-width: 9.5rem;
+        justify-content: space-between;
       }
     }
   }
@@ -289,21 +315,21 @@ onMounted(() => {
 
     .search-loading,
     .no-results {
-      padding: 30px;
+      padding: 4rem 1rem;
       text-align: center;
-      color: var(--color-base);
+      color: var(--color-base--subtle);
       font-size: 16px;
     }
 
     .results-info {
-      padding: 15px 20px;
+      padding: 0.75rem 0.25rem;
       font-size: 14px;
       color: var(--color-base);
       border-bottom: 1px solid var(--border-color-base--darker);
     }
 
     .result-item {
-      padding: 20px;
+      padding: 1rem 0.25rem;
       border-bottom: 1px solid var(--border-color-base--darker);
       cursor: pointer;
       transition: background-color 0.2s;
@@ -362,27 +388,25 @@ onMounted(() => {
       gap: 15px;
       border-top: 1px solid var(--border-color-base--darker);
 
-      .pagination-btn {
-        padding: 8px 16px;
-        background: white;
-        border: 1px solid var(--border-color-base--darker);
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.2s;
-
-        &:hover:not(:disabled) {
-          background: var(--border-color-base--darker);
-        }
-
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-      }
-
       .page-info {
         font-size: 14px;
         color: var(--color-base);
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .question-search-page {
+    padding-inline: 0.75rem;
+
+    .search-container {
+      padding: 0.75rem 0.25rem;
+
+      .search-filters {
+        :deep(button) {
+          min-width: 8rem;
+        }
       }
     }
   }

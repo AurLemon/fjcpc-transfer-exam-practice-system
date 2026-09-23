@@ -3,10 +3,12 @@ import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 
 import { useCardStore } from '@/stores/card'
+import { useUserStore } from '@/stores/user'
 import ContainerPanel from '@/components/ContainerPanel.vue'
 import PageViewContainer from '@/components/PageViewContainer.vue'
 
 const cardStore = useCardStore()
+const userStore = useUserStore()
 
 const route = useRoute()
 
@@ -121,6 +123,14 @@ onBeforeUnmount(() => {
           >设置</router-link
         >
         <router-link
+          v-if="userStore.profile.permission >= 10"
+          to="/admin"
+          class="page-container-main-tools__button"
+          :class="{ active: route.path.startsWith('/admin') }"
+          :active-class="'active'"
+          >管理</router-link
+        >
+        <router-link
           to="/about"
           class="page-container-main-tools__button"
           :active-class="'active'"
@@ -135,9 +145,9 @@ onBeforeUnmount(() => {
       </div>
       <div class="page-container-main-wrapper">
         <router-view v-slot="{ Component }">
-          <transition name="route">
+          <transition name="route" mode="out-in" appear>
             <keep-alive :include="['SearchView', 'TestView', 'StarView']">
-              <component :is="Component" />
+              <component :is="Component" :key="route.fullPath" />
             </keep-alive>
           </transition>
         </router-view>

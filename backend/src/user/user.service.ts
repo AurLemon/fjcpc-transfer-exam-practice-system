@@ -317,6 +317,39 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
+  async listUsers(): Promise<User[]> {
+    return this.userRepository.find({ order: { reg_date: 'DESC' } });
+  }
+
+  async deleteUser(uuid: string): Promise<boolean> {
+    const result = await this.userRepository.delete({ uuid });
+    return result.affected > 0;
+  }
+
+  async updateUser(uuid: string, changes: any): Promise<User> {
+    const user = await this.findUserByUuid(uuid);
+    if (!user) throw new Error('用户不存在');
+
+    if (changes.nick !== undefined && changes.nick !== user.nick) {
+      const duplicate = await this.findByNick(changes.nick);
+      if (duplicate && duplicate.uuid !== uuid) throw new Error('昵称已存在');
+      user.nick = changes.nick;
+      user.identifier = this.cryptoUtil.hashEncrypt(changes.nick);
+    }
+    if (changes.name !== undefined) user.name = changes.name;
+    if (changes.school !== undefined) user.school = changes.school;
+    if (changes.profession !== undefined) user.profession = changes.profession;
+    if (changes.profession_main_subject !== undefined)
+      user.profession_main_subject = Number(changes.profession_main_subject);
+    if (changes.permission !== undefined)
+      user.permission = Number(changes.permission);
+    if (changes.password !== undefined) {
+      await this.updatePassword(uuid, changes.password);
+    }
+
+    return this.userRepository.save(user);
+  }
+
   // 检查用户权限是否足够
   async checkUserPermission(
     uuid: string,

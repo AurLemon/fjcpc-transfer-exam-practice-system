@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, computed } from 'vue'
+import { defineComponent } from 'vue'
 import { useNotifyStore } from '@/stores/notify'
 
 export default defineComponent({
@@ -7,23 +7,15 @@ export default defineComponent({
   setup() {
     const notifyStore = useNotifyStore()
 
-    const visible = computed(() => notifyStore.messageStack.length > 0)
-
     return {
       notifyStore,
-      visible,
     }
   },
 })
 </script>
 
 <template>
-  <transition-group
-    name="notify"
-    tag="div"
-    class="notify-container"
-    v-show="visible"
-  >
+  <transition-group name="notify" tag="div" class="notify-container">
     <div
       class="notify"
       v-for="notify in notifyStore.messageStack"

@@ -61,6 +61,25 @@ const router = createRouter({
       component: () => import('../views/AdvancedView.vue'),
     },
     {
+      path: '/admin',
+      redirect: '/admin/subjects',
+    },
+    {
+      path: '/admin/subjects',
+      name: 'adminSubjects',
+      component: () => import('../views/AdminView.vue'),
+    },
+    {
+      path: '/admin/users',
+      name: 'adminUsers',
+      component: () => import('../views/AdminView.vue'),
+    },
+    {
+      path: '/admin/crawl',
+      name: 'adminCrawl',
+      component: () => import('../views/AdminView.vue'),
+    },
+    {
       path: '/about',
       name: 'adout',
       component: () => import('../views/AboutView.vue'),

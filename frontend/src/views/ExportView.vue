@@ -63,11 +63,6 @@ const questionTypeItems = [
   { label: '判断题', value: 2 },
   { label: '阅读题', value: 8 },
 ]
-const selectUi = {
-  base: 'export-select-trigger',
-  content: 'export-select-content',
-}
-
 const getExportConfig = async () => {
   isLoading.value = true
   try {
@@ -135,8 +130,6 @@ onMounted(() => {
 
     <div class="export-view-form">
       <div class="export-view-section">
-        <h2>基本设置</h2>
-
         <div class="export-view-field">
           <label for="count">题目数量</label>
           <div class="export-view-input-wrapper">
@@ -146,7 +139,7 @@ onMounted(() => {
               v-model="exportSettings.count"
               min="1"
               max="100"
-              class="export-view-input"
+              class="export-view-input w-full"
             />
             <div class="export-view-input-hint">导出题目的数量，最多100题</div>
           </div>
@@ -159,8 +152,7 @@ onMounted(() => {
               id="course"
               v-model="exportSettings.course"
               :items="courseItems"
-              :ui="selectUi"
-              class="export-view-select"
+              class="export-view-select w-full"
             />
           </div>
         </div>
@@ -172,8 +164,7 @@ onMounted(() => {
               id="subject"
               v-model="exportSettings.subject"
               :items="subjectItems"
-              :ui="selectUi"
-              class="export-view-select"
+              class="export-view-select w-full"
             />
           </div>
         </div>
@@ -185,8 +176,7 @@ onMounted(() => {
               id="questionType"
               v-model="exportSettings.questionType"
               :items="questionTypeItems"
-              :ui="selectUi"
-              class="export-view-select"
+              class="export-view-select w-full"
             />
           </div>
         </div>
@@ -209,22 +199,24 @@ onMounted(() => {
       </div>
 
       <div class="export-view-actions">
-        <button
+        <UButton
+          icon="i-lucide-refresh-cw"
+          color="neutral"
+          variant="outline"
           @click="resetForm"
           class="export-view-button export-view-button-secondary"
         >
-          <span class="material-icons">refresh</span>
           重置
-        </button>
+        </UButton>
 
-        <button
+        <UButton
+          icon="i-lucide-download"
           @click="exportQuestions"
           class="export-view-button export-view-button-primary"
           :disabled="isLoading"
         >
-          <span class="material-icons">download</span>
           导出题目
-        </button>
+        </UButton>
       </div>
     </div>
 
@@ -270,14 +262,6 @@ onMounted(() => {
     margin: 0 1rem;
 
     .export-view-section {
-      h2 {
-        font-size: 18px;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid var(--border-color-base);
-      }
-
       .export-view-field {
         display: flex;
         align-items: baseline;
@@ -290,21 +274,16 @@ onMounted(() => {
 
         .export-view-input-wrapper {
           flex: 1;
+          min-width: 0;
 
           .export-view-input,
           .export-view-select {
-            width: 8rem;
-            max-width: 8rem;
+            width: 100%;
+            max-width: none;
           }
 
           .export-view-input {
-            width: 8rem;
-            max-width: 8rem;
-          }
-
-          .export-view-select {
-            width: 8rem;
-            max-width: 8rem;
+            min-width: 0;
           }
 
           .export-view-checkbox-wrapper {
@@ -317,6 +296,7 @@ onMounted(() => {
           }
 
           .export-view-input-hint {
+            width: 100%;
             font-size: 12px;
             color: var(--color-surface-4);
             margin-top: 0.25rem;

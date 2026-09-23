@@ -12,6 +12,7 @@ import { UserService } from '../user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RequestInfo } from '../database/entities/request_info.entity';
+import { isRegistrationEnabled } from '../config/config';
 
 @Controller('auth')
 export class AuthController {
@@ -45,6 +46,21 @@ export class AuthController {
     };
 
     const { nick, id_number, password } = body;
+
+    if (!isRegistrationEnabled()) {
+      const existingUser = id_number
+        ? await this.userService.findByIdNumber(
+            await this.cryptoUtil.decryptWithSM2(id_number),
+          )
+        : await this.userService.findByNick(nick);
+      if (!existingUser) {
+        return ApiResponseUtil.error(
+          403,
+          'registration_closed',
+          '暂未开放注册',
+        );
+      }
+    }
 
     if (nick && /^\d+$/.test(nick)) {
       return ApiResponseUtil.error(

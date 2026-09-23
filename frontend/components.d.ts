@@ -12,6 +12,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AdminTable: typeof import('./src/components/admin/AdminTable.vue')['default']
     AuthCard: typeof import('./src/components/common/AuthCard.vue')['default']
     ContainerPanel: typeof import('./src/components/ContainerPanel.vue')['default']
     LoginCard: typeof import('./src/components/common/LoginCard.vue')['default']
@@ -25,14 +26,24 @@ declare module 'vue' {
     QuestionView: typeof import('./src/components/question/QuestionView.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    UAlert: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/Alert.vue')['default']
+    UBadge: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/Badge.vue')['default']
+    UButton: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/Button.vue')['default']
+    UCard: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/Card.vue')['default']
     UCheckbox: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/Checkbox.vue')['default']
+    UFormField: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/FormField.vue')['default']
+    UIcon: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/vue/components/Icon.vue')['default']
     UInput: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/Input.vue')['default']
+    UModal: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/Modal.vue')['default']
     USelect: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/Select.vue')['default']
+    USwitch: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/Switch.vue')['default']
+    UTable: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/Table.vue')['default']
   }
 }
 
 // For TSX support
 declare global {
+  const AdminTable: typeof import('./src/components/admin/AdminTable.vue')['default']
   const AuthCard: typeof import('./src/components/common/AuthCard.vue')['default']
   const ContainerPanel: typeof import('./src/components/ContainerPanel.vue')['default']
   const LoginCard: typeof import('./src/components/common/LoginCard.vue')['default']
@@ -46,7 +57,16 @@ declare global {
   const QuestionView: typeof import('./src/components/question/QuestionView.vue')['default']
   const RouterLink: typeof import('vue-router')['RouterLink']
   const RouterView: typeof import('vue-router')['RouterView']
+  const UAlert: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/Alert.vue')['default']
+  const UBadge: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/Badge.vue')['default']
+  const UButton: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/Button.vue')['default']
+  const UCard: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/Card.vue')['default']
   const UCheckbox: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/Checkbox.vue')['default']
+  const UFormField: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/FormField.vue')['default']
+  const UIcon: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/vue/components/Icon.vue')['default']
   const UInput: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/Input.vue')['default']
+  const UModal: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/Modal.vue')['default']
   const USelect: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/Select.vue')['default']
+  const USwitch: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/Switch.vue')['default']
+  const UTable: typeof import('./../node_modules/.pnpm/@nuxt+ui@4.11.1_3623c88feef473540d0eda0aed8448b0/node_modules/@nuxt/ui/dist/runtime/components/Table.vue')['default']
 }

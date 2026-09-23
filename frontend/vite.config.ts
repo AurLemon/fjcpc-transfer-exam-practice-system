@@ -59,7 +59,15 @@ export default defineConfig({
     vueJsx(),
     ui({
       theme: {
-        colors: ['primary', 'secondary', 'info', 'success', 'warning', 'error', 'neutral'],
+        colors: [
+          'primary',
+          'secondary',
+          'info',
+          'success',
+          'warning',
+          'error',
+          'neutral',
+        ],
       },
       ui: {
         colors: {
@@ -67,6 +75,67 @@ export default defineConfig({
           secondary: 'primary',
           info: 'primary',
           neutral: 'slate',
+        },
+        button: {
+          slots: {
+            base: 'rounded-lg transition-[color,background-color,border-color,transform] duration-150 active:scale-95',
+          },
+          defaultVariants: {
+            color: 'neutral',
+            variant: 'outline',
+            size: 'md',
+          },
+        },
+        input: {
+          slots: {
+            base: 'rounded-lg bg-transparent text-sm text-highlighted transition-colors',
+          },
+          defaultVariants: {
+            color: 'neutral',
+            variant: 'outline',
+            size: 'sm',
+          },
+        },
+        select: {
+          slots: {
+            base: 'rounded-lg bg-transparent text-sm text-highlighted transition-colors',
+          },
+          defaultVariants: {
+            color: 'neutral',
+            variant: 'outline',
+            size: 'sm',
+          },
+        },
+        textarea: {
+          slots: {
+            base: 'rounded-lg bg-transparent text-sm text-highlighted transition-colors',
+          },
+          defaultVariants: {
+            color: 'neutral',
+            variant: 'outline',
+            size: 'sm',
+          },
+        },
+        checkbox: {
+          defaultVariants: {
+            color: 'primary',
+            size: 'md',
+          },
+        },
+        switch: {
+          slots: {
+            label: 'text-sm text-default',
+          },
+          defaultVariants: {
+            color: 'primary',
+            size: 'md',
+          },
+        },
+        modal: {
+          slots: {
+            overlay: 'z-[200]',
+            content: 'z-[201]',
+          },
         },
       },
     }),

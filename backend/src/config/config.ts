@@ -41,6 +41,15 @@ const resolveEstimatedExamTime = (value: string | undefined): string => {
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 };
 
+let registrationEnabled = process.env.REGISTRATION_ENABLED !== 'false';
+
+export const isRegistrationEnabled = (): boolean => registrationEnabled;
+
+export const setRegistrationEnabled = (enabled: boolean): boolean => {
+  registrationEnabled = enabled;
+  return registrationEnabled;
+};
+
 export default () => {
   const examTimeIsConfirmed = parseBoolean(process.env.EXAM_TRUST, false);
   const configuredExamTime = process.env.EXAM_TIME?.trim() || '05-15';
@@ -71,6 +80,9 @@ export default () => {
     },
     jwt: {
       secret: process.env.JWT_SECRET || '',
+    },
+    registration: {
+      enabled: parseBoolean(process.env.REGISTRATION_ENABLED, true),
     },
     exam_info: {
       exam_time: examTime,

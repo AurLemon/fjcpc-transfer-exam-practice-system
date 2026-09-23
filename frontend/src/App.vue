@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UApp from '@nuxt/ui/components/App.vue'
 import PageHeader from './components/PageHeader.vue'
 import PageContainer from './components/PageContainer.vue'
 import PageFooter from './components/PageFooter.vue'
@@ -40,10 +41,12 @@ const init = (async () => {
 </script>
 
 <template>
-  <PageHeader />
-  <PageContainer />
-  <PageFooter />
-  <NotifyContainer />
+  <UApp>
+    <PageHeader />
+    <PageContainer />
+    <PageFooter />
+    <NotifyContainer />
+  </UApp>
 </template>
 
 <style lang="scss">

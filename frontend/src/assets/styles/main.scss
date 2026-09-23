@@ -148,24 +148,6 @@ body {
   );
 }
 
-input,
-select,
-textarea,
-button {
-  color: var(--color-base--emphasized);
-  padding: 6px;
-  background-color: transparent;
-  border: 1px solid var(--border-color-base--darker);
-  border-radius: 8px;
-  transition: var(--transition-hover);
-  font-size: 14px;
-}
-
-button:active {
-  background-color: var(--color-surface-2);
-  transform: scale(0.95);
-}
-
 .question-filter-select-trigger {
   width: max-content !important;
   min-width: 0 !important;
@@ -179,17 +161,6 @@ button:active {
   width: var(--reka-select-trigger-width) !important;
   min-width: 0 !important;
   max-width: min(18rem, calc(100vw - 1rem)) !important;
-}
-
-.export-select-trigger,
-.export-select-content {
-  width: 8rem !important;
-  min-width: 8rem !important;
-  max-width: 8rem !important;
-}
-
-.export-select-trigger {
-  padding-right: 2.75rem !important;
 }
 
 .page-container-title {
