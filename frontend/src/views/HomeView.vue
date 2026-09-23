@@ -370,13 +370,24 @@ const openLoginCard = () => {
       border-radius: 16px;
       transition: 250ms ease;
 
-      &:hover {
-        filter: brightness(1.05);
-      }
-
       &:active {
         transform: scale(0.95);
       }
+    }
+
+    .page-guide-link {
+      font-weight: 500;
+      border: 1px solid var(--border-color-base);
+      background: var(--color-primary);
+      cursor: pointer;
+
+      &:hover {
+        background: var(--color-base--subtle);
+      }
+    }
+
+    :deep(.page-guide-login-button:hover) {
+      filter: brightness(1.05);
     }
   }
 }

@@ -34,7 +34,7 @@ applyTheme(isDarkMode.value)
       </div>
       <div class="page-menu-list">
         <UButton
-          class="page-menu-theme-toggle -mr-1"
+          class="page-menu-theme-toggle translate-x-1"
           :icon="isDarkMode ? 'i-lucide-sun' : 'i-lucide-moon'"
           color="neutral"
           variant="ghost"
@@ -147,6 +147,7 @@ applyTheme(isDarkMode.value)
     .page-menu-link {
       border-radius: 50%;
       overflow: hidden;
+      opacity: 0.8;
       transition: var(--transition-hover);
 
       img {
@@ -156,13 +157,14 @@ applyTheme(isDarkMode.value)
       }
 
       &:hover {
-        filter: brightness(1.1);
-        transform: scale(1.05);
+        opacity: 1;
       }
     }
 
     .page-menu-theme-toggle {
-      display: block;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       width: 32px;
       height: 32px;
       padding: 0 !important;
